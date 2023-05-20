@@ -22,4 +22,14 @@ def draw_page(*, function_name: str):
         field = ValueField(field)
         field.update()
 
-    # st.write(function.data)
+    commands = [
+        'create',
+        'delete',
+        'exists',
+    ]
+    for (command_name, tab) in zip(
+        commands,
+        st.tabs([command.title() for command in commands]),
+    ):
+        if tab.button('Submit', key=command_name):
+            tab.write(command_name)
