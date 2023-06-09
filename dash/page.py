@@ -114,16 +114,8 @@ def _draw_page_job_delete(
                 function_name=function_name,
                 job_name=job.name(),
             )
-            with st.spinner(
-                'Deleting ('
-                f'{job.namespace()}::{job.name()}'
-                ')...'
-            ):
-                st.success(
-                    'Requested Deleting ('
-                    f'{job.namespace()}::{job.name()}'
-                    ')',
-                )
+            with st.spinner(f'Deleting ({job.name()})...'):
+                st.success(f'Requested Deleting ({job.name()})')
 
             # Remove data
             job.data = {}
@@ -147,17 +139,9 @@ def _draw_page_job_restart(
                 function_name=function_name,
                 job_name=job.name(),
             )
-            with st.spinner(
-                'Restarting ('
-                f'{job.namespace()}::{job.name()}'
-                ')...'
-            ):
+            with st.spinner(f'Restarting ({job.name()})...'):
                 st.success(
-                    'Requested Restarting ('
-                    f'{job.namespace()}::{job.name()}'
-                    ' => '
-                    f'{new_job.namespace()}::{new_job.name()}'
-                    ')',
+                    f'Requested Restarting ({job.namespace()} => {new_job.name()})',
                 )
 
             # Replace data
@@ -185,11 +169,7 @@ def _draw_page_run(
                 function_name=function_name,
                 value=value.data,
             )
-        st.success(
-            'Created ('
-            f'{new_job.namespace()}::{new_job.name()}'
-            ')',
-        )
+        st.success(f'Created ({new_job.name()})')
 
 
 def _draw_caution_side_effect() -> None:
