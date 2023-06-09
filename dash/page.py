@@ -8,9 +8,10 @@ from dash.modules.field import ValueField
 client = DashClient()
 
 
-def draw_page(*, function_name: str):
+def draw_page(*, namespace: str, function_name: str):
     # Get function
     function = client.get_function(
+        namespace=namespace,
         name=function_name,
     )
 
@@ -19,7 +20,7 @@ def draw_page(*, function_name: str):
 
     # Update inputs
     for field in function.data['spec']['input']:
-        field = ValueField(field)
+        field = ValueField(namespace, field)
         field.update()
 
     commands = [

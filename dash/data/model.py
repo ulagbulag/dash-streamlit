@@ -1,5 +1,5 @@
 from dash.data.object import DashObject
 
 
-class DashFunction(DashObject):
+class DashModel(DashObject):
     pass

@@ -5,10 +5,14 @@ import streamlit as st
 from typing import Any
 import uuid
 
+from dash.client import DashClient
+
 
 class ValueField:
-    def __init__(self, field: dict[str, Any]) -> None:
+    def __init__(self, namespace: str, field: dict[str, Any]) -> None:
+        self._namespace = namespace
         self._field = field
+        self._models = None
         self._value = None
 
         self._kind = None
@@ -86,10 +90,9 @@ class ValueField:
     def _update_one_of_strings(self) -> str | None:
         spec = self._field['oneOfStrings']
         choices = spec.get('choices') or []
-        default = spec.get('default')
+        default = self._get_value(spec.get('default'))
 
-        index = self._get_value(default)
-        if index is not None:
+        if default is not None:
             try:
                 index = choices.index(default)
             except:
@@ -99,7 +102,7 @@ class ValueField:
 
         return st.selectbox(
             label=self.title(),
-            options=choices or [],
+            options=choices,
             index=index,
         )
 
@@ -129,19 +132,19 @@ class ValueField:
         )
         return datetime.datetime.combine(date, time)
 
-    def _update_ip(self) -> ipaddress.IPv4Address | ipaddress.IPv6Address:
+    def _update_ip(self) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
         try:
             return ipaddress.ip_address(self._update_string(kind='ip'))
         except ValueError as e:
             st.warning(e)
-            st.stop()
+            return None
 
-    def _update_uuid(self) -> uuid.UUID:
+    def _update_uuid(self) -> uuid.UUID | None:
         try:
             return uuid.UUID(self._update_string(kind='uuid'))
         except ValueError as e:
             st.warning(e)
-            st.stop()
+            return None
 
     # BEGIN aggregation types
 
@@ -156,6 +159,37 @@ class ValueField:
 
     # BEGIN reference types
 
-    def _update_model(self) -> None:
-        st.write(self._field)
-        pass
+    def _update_model(self) -> str | None:
+        spec = self._field['model']
+        model_name = spec.get('name')
+
+        # Load DASH Client
+        client = DashClient()
+
+        # Load models
+        if self._models is None:
+            self._models = client.get_model_item_list(
+                namespace=self._namespace,
+                name=model_name,
+            )
+
+        # Get model names
+        model_names = sorted((
+            model.title()
+            for model in self._models
+        ))
+        default = self._get_value(None)
+
+        if default is not None:
+            try:
+                index = model_names.index(default)
+            except:
+                index = 0
+        else:
+            index = 0
+
+        return st.selectbox(
+            label=self.title(),
+            options=model_names,
+            index=index,
+        )
