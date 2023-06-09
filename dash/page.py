@@ -120,7 +120,7 @@ def _draw_page_job_delete(
                 ')...'
             ):
                 st.success(
-                    'Deleted ('
+                    'Requested Deleting ('
                     f'{job.namespace()}::{job.name()}'
                     ')',
                 )
@@ -153,7 +153,7 @@ def _draw_page_job_restart(
                 ')...'
             ):
                 st.success(
-                    'Restarted ('
+                    'Requested Restarting ('
                     f'{job.namespace()}::{job.name()}'
                     ' => '
                     f'{new_job.namespace()}::{new_job.name()}'
