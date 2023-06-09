@@ -149,13 +149,13 @@ class ValueField:
     # BEGIN aggregation types
 
     def _update_string_array(self) -> None:
-        pass
+        raise Exception('String Array is not supported yet!')
 
     def _update_object(self) -> None:
         pass
 
     def _update_object_array(self) -> None:
-        pass
+        raise Exception('Object Array is not supported yet!')
 
     # BEGIN reference types
 
@@ -168,10 +168,13 @@ class ValueField:
 
         # Load models
         if self._models is None:
-            self._models = client.get_model_item_list(
-                namespace=self._namespace,
-                name=model_name,
-            )
+            self._models = {
+                model.title(): model
+                for model in client.get_model_item_list(
+                    namespace=self._namespace,
+                    name=model_name,
+                )
+            }
 
         # Get model names
         model_names = sorted((
@@ -188,8 +191,11 @@ class ValueField:
         else:
             index = 0
 
-        return st.selectbox(
+        selected = st.selectbox(
             label=self.title(),
             options=model_names,
             index=index,
         )
+        if selected is not None:
+            return self._models[selected].name()
+        return None
