@@ -6,7 +6,9 @@ import streamlit as st
 from streamlit.web.server.websocket_headers import _get_websocket_headers
 
 from dash.data.function import DashFunction
+from dash.data.job import DashJob
 from dash.data.model import DashModel
+from dash.data.resource import ResourceRef
 
 
 class DashClient:
@@ -62,6 +64,82 @@ class DashClient:
         raise Exception(
             f'Failed to execute {path}: status code [{response.status_code}]')
 
+    def delete_job(
+        self, *, namespace: str | None = None,
+        function_name: str, job_name: str,
+    ) -> None:
+        return self._call_raw(
+            namespace=namespace,
+            method='DELETE',
+            path=f'/function/{function_name}/job/{job_name}/',
+        )
+
+    def get_job(
+        self, *, namespace: str | None = None,
+        function_name: str, job_name: str,
+    ) -> DashJob:
+        return DashJob(
+            data=self._call_raw(
+                namespace=namespace,
+                method='GET',
+                path=f'/function/{function_name}/job/{job_name}/',
+            )
+        )
+
+    def get_job_list(
+        self, *, namespace: str | None = None,
+    ) -> list[DashJob]:
+        return [
+            DashJob(
+                data=data,
+            )
+            for data in self._call_raw(
+                namespace=namespace,
+                method='GET',
+                path=f'/job/',
+            )
+        ]
+
+    def get_job_list_with_function_name(
+        self, *, namespace: str | None = None,
+        function_name: str,
+    ) -> list[DashJob]:
+        return [
+            DashJob(
+                data=data,
+            )
+            for data in self._call_raw(
+                namespace=namespace,
+                method='GET',
+                path=f'/function/{function_name}/job/',
+            )
+        ]
+
+    def post_job(
+        self, *, namespace: str | None = None,
+        function_name: str, value: Any,
+    ) -> DashJob:
+        return DashJob(
+            data=self._call_raw(
+                namespace=namespace,
+                method='POST',
+                path=f'/function/{function_name}/job/',
+                value=value,
+            ),
+        )
+
+    def restart_job(
+        self, *, namespace: str | None = None,
+        function_name: str, job_name: str,
+    ) -> DashJob:
+        return DashJob(
+            data=self._call_raw(
+                namespace=namespace,
+                method='POST',
+                path=f'/function/{function_name}/job/{job_name}/restart/',
+            ),
+        )
+
     def get_function(
         self, *, namespace: str | None = None,
         name: str,
@@ -76,52 +154,58 @@ class DashClient:
 
     def get_function_list(
         self, *, namespace: str | None = None,
-    ) -> list[Any]:
-        return self._call_raw(
-            namespace=namespace,
-            method='GET',
-            path=f'/function/',
-        )
-
-    def post_function(
-        self, *, namespace: str | None = None,
-        name: str, value: Any,
-    ):
-        self._call_raw(
-            namespace=namespace,
-            method='POST',
-            path=f'/function/{name}/',
-            value=value,
-        )
+    ) -> list[ResourceRef]:
+        return [
+            ResourceRef(
+                data=data,
+            )
+            for data in self._call_raw(
+                namespace=namespace,
+                method='GET',
+                path=f'/function/',
+            )
+        ]
 
     def get_model(
         self, *, namespace: str | None = None,
         name: str,
-    ) -> dict:
-        return self._call_raw(
-            namespace=namespace,
-            method='GET',
-            path=f'/model/{name}/',
+    ) -> DashModel:
+        return DashModel(
+            data=self._call_raw(
+                namespace=namespace,
+                method='GET',
+                path=f'/model/{name}/',
+            ),
         )
 
     def get_model_function_list(
         self, *, namespace: str | None = None,
         name: str,
-    ) -> list[dict[str, Any]]:
-        return self._call_raw(
-            namespace=namespace,
-            method='GET',
-            path=f'/model/{name}/function/',
-        )
+    ) -> list[DashFunction]:
+        return [
+            DashFunction(
+                data=data,
+            )
+            for data in self._call_raw(
+                namespace=namespace,
+                method='GET',
+                path=f'/model/{name}/function/',
+            )
+        ]
 
     def get_model_list(
         self, *, namespace: str | None = None,
-    ) -> list[Any]:
-        return self._call_raw(
-            namespace=namespace,
-            method='GET',
-            path=f'/model/',
-        )
+    ) -> list[ResourceRef]:
+        return [
+            ResourceRef(
+                data=data,
+            )
+            for data in self._call_raw(
+                namespace=namespace,
+                method='GET',
+                path=f'/model/',
+            )
+        ]
 
     def get_model_item(
         self, *, namespace: str | None = None,

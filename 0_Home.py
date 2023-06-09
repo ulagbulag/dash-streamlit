@@ -31,13 +31,13 @@ def load_pages():
     # Load Pages
     for index, function_ref in enumerate(functions, start=1):
         function = client.get_function(
-            namespace=function_ref['namespace'],
-            name=function_ref['name'],
+            namespace=function_ref.namespace,
+            name=function_ref.name,
         )
         with open(f'./pages/{index:04d}_{function.title().replace(" ", "_")}.py', 'w') as f:
             f.write(template.render(
-                namespace=function_ref['namespace'],
-                function_name=function_ref['name'],
+                namespace=function_ref.namespace,
+                function_name=function_ref.name,
             ))
 
 
