@@ -12,7 +12,7 @@ FROM "docker.io/library/alpine:${ALPINE_VERSION}"
 # Server Configuration
 EXPOSE 80/tcp
 WORKDIR /src
-CMD [ "streamlit", "run", "0_Home.py", "--browser.gatherUsageStats=False", "--server.address=0.0.0.0", "--server.enableCORS=false", "--server.enableXsrfProtection=false", "--server.headless=true", "--server.port=80" ]
+CMD [ "streamlit", "run", "0_Home.py", "--browser.gatherUsageStats=False", "--server.address=0.0.0.0", "--server.baseUrlPath=/dash/", "--server.enableCORS=false", "--server.enableXsrfProtection=false", "--server.headless=true", "--server.port=80" ]
 
 # Install dependencies
 RUN apk add --no-cache \
