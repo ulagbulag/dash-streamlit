@@ -5,7 +5,7 @@ from dash.client import DashClient
 from dash.page import draw_page
 
 
-# @st.cache_resource()
+@st.cache_resource(ttl=300)  # 5 minutes
 def load_functions(
     *,
     namespace: str | None = None,
@@ -44,10 +44,12 @@ def load_pages():
                 namespace='*',
                 user_name=user_name,
             )
+            is_admin = True
         except Exception:
             functions = load_functions(
                 user_name=user_name,
             )
+            is_admin = False
 
     # Load Cached Function
     function_selected = st.session_state.get(f'/{user_name}', None)
@@ -67,7 +69,7 @@ def load_pages():
             with st.expander(namespace, expanded=True):
                 for function_ref in functions_namespaced:
                     function = client.get_function(
-                        namespace=function_ref.namespace,
+                        namespace=function_ref.namespace if is_admin else None,
                         name=function_ref.name,
                     )
                     if st.button(
@@ -82,6 +84,7 @@ def load_pages():
     # Load Selected Page
     if function_selected is not None:
         draw_page(
+            namespace=function_selected.namespace() if is_admin else None,
             function=function_selected,
         )
     else:

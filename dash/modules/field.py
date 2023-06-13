@@ -9,7 +9,7 @@ from dash.client import DashClient
 
 
 class ValueField:
-    def __init__(self, namespace: str, field: dict[str, Any]) -> None:
+    def __init__(self, namespace: str | None, field: dict[str, Any]) -> None:
         self._namespace = namespace
         self._field = field
         self._models = None

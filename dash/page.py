@@ -13,11 +13,9 @@ from dash.modules.field import ValueField
 client = DashClient()
 
 
-def draw_page(*, function: DashFunction) -> None:
-    # Get metadata
-    namespace = function.namespace()
-    function_name = function.name()
-
+def draw_page(
+    *, namespace: str | None, function: DashFunction,
+) -> None:
     # Page information
     st.title(function.title())
 
@@ -32,15 +30,15 @@ def draw_page(*, function: DashFunction) -> None:
     ):
         with tab:
             draw(
+                namespace=namespace,
                 function=function,
             )
 
 
 def _draw_page_job_list(
-    *, function: DashFunction,
+    *, namespace: str | None, function: DashFunction,
 ) -> None:
     # Get metadata
-    namespace = function.namespace()
     function_name = function.name()
 
     # Load jobs
@@ -98,12 +96,11 @@ def _draw_page_job_list(
 
 
 def _draw_page_job_delete(
-    *, function: DashFunction,
+    *, namespace: str | None, function: DashFunction,
     jobs: list[DashJob],
 ) -> None:
     # Get metadata
     user_name = client.user_name()
-    namespace = function.namespace()
     function_name = function.name()
 
     # Notify the caution
@@ -126,12 +123,11 @@ def _draw_page_job_delete(
 
 
 def _draw_page_job_restart(
-    *, function: DashFunction,
+    *, namespace: str | None, function: DashFunction,
     jobs: list[DashJob],
 ) -> None:
     # Get metadata
     user_name = client.user_name()
-    namespace = function.namespace()
     function_name = function.name()
 
     # Notify the caution
@@ -156,11 +152,10 @@ def _draw_page_job_restart(
 
 
 def _draw_page_run(
-    *, function: DashFunction,
+    *, namespace: str | None, function: DashFunction,
 ) -> None:
     # Get metadata
     user_name = client.user_name()
-    namespace = function.namespace()
     function_name = function.name()
 
     # Update inputs
