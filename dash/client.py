@@ -64,6 +64,18 @@ class DashClient:
         raise Exception(
             f'Failed to execute {path}: status code [{response.status_code}]')
 
+    def user_name(self) -> int:
+        cookie = (_get_websocket_headers() or {}).get('Cookie')
+        if not cookie:
+            st.error('Login is required!')
+            st.stop()
+
+        @st.cache_data()
+        def get_hashed_cookie(cookie: str) -> int:
+            return hash(cookie)
+
+        return get_hashed_cookie(cookie)
+
     def delete_job(
         self, *, namespace: str | None = None,
         function_name: str, job_name: str,

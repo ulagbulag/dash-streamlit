@@ -102,6 +102,7 @@ def _draw_page_job_delete(
     jobs: list[DashJob],
 ) -> None:
     # Get metadata
+    user_name = client.user_name()
     namespace = function.namespace()
     function_name = function.name()
 
@@ -111,7 +112,7 @@ def _draw_page_job_delete(
     # Apply
     if st.button(
         label='Delete',
-        key=f'/{namespace}/{function_name}/delete',
+        key=f'/{user_name}/{namespace}/{function_name}/delete',
     ):
         for job in jobs:
             client.delete_job(
@@ -129,6 +130,7 @@ def _draw_page_job_restart(
     jobs: list[DashJob],
 ) -> None:
     # Get metadata
+    user_name = client.user_name()
     namespace = function.namespace()
     function_name = function.name()
 
@@ -138,7 +140,7 @@ def _draw_page_job_restart(
     # Apply
     if st.button(
         label='Restart',
-        key=f'/{namespace}/{function_name}/restart',
+        key=f'/{user_name}/{namespace}/{function_name}/restart',
     ):
         for job in jobs:
             new_job = client.restart_job(
@@ -157,6 +159,7 @@ def _draw_page_run(
     *, function: DashFunction,
 ) -> None:
     # Get metadata
+    user_name = client.user_name()
     namespace = function.namespace()
     function_name = function.name()
 
@@ -169,7 +172,7 @@ def _draw_page_run(
     # Apply
     if st.button(
         label='Create',
-        key=f'/{namespace}/{function_name}/create',
+        key=f'/{user_name}/{namespace}/{function_name}/create',
     ):
         with st.spinner('Creating...'):
             new_job = client.post_job(

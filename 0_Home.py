@@ -5,8 +5,12 @@ from dash.client import DashClient
 from dash.page import draw_page
 
 
-@st.cache_resource()
-def load_functions(namespace: str | None = None):
+# @st.cache_resource()
+def load_functions(
+    *,
+    namespace: str | None = None,
+    user_name: int,
+):
     # Load DASH Client
     client = DashClient()
 
@@ -31,19 +35,34 @@ def load_functions(namespace: str | None = None):
 def load_pages():
     # Load DASH Client
     client = DashClient()
+    user_name = client.user_name()
 
     # Load Functions
     with st.spinner('Initializing...'):
         try:
-            functions = load_functions(namespace='*')
+            functions = load_functions(
+                namespace='*',
+                user_name=user_name,
+            )
         except Exception:
-            functions = load_functions()
+            functions = load_functions(
+                user_name=user_name,
+            )
 
     # Load Cached Function
-    function_selected = st.session_state.get('/', None)
+    function_selected = st.session_state.get(f'/{user_name}', None)
 
     # Load Pages
     with st.sidebar:
+        if st.button(
+            label=':house: Home',
+            key=f'/{user_name}/_',
+            type='primary' if function_selected is None else 'secondary',
+            use_container_width=True,
+        ):
+            function_selected = st.session_state[f'/{user_name}'] = None
+            st.experimental_rerun()
+
         for namespace, functions_namespaced in functions.items():
             with st.expander(namespace, expanded=True):
                 for function_ref in functions_namespaced:
@@ -53,11 +72,11 @@ def load_pages():
                     )
                     if st.button(
                         label=function.title(),
-                        key=f'/{function.namespace()}/{function.name()}',
+                        key=f'/{user_name}/{function.namespace()}/{function.name()}',
                         type='primary' if function == function_selected else 'secondary',
                         use_container_width=True,
                     ):
-                        function_selected = st.session_state['/'] = function
+                        function_selected = st.session_state[f'/{user_name}'] = function
                         st.experimental_rerun()
 
     # Load Selected Page
@@ -66,8 +85,12 @@ def load_pages():
             function=function_selected,
         )
     else:
-        # Page Information
-        st.title('Welcome to OpenARK Dashboard')
+        _draw_home_page()
+
+
+def _draw_home_page() -> None:
+    # Page Information
+    st.title('Welcome to OpenARK Dashboard')
 
 
 if __name__ == '__main__':
