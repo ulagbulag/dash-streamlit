@@ -29,7 +29,6 @@ RUN apk add --no-cache \
     py3-idna \
     py3-importlib-metadata \
     py3-inflect \
-    py3-jinja2 \
     py3-jsonschema \
     py3-markdown-it-py \
     py3-numpy \
