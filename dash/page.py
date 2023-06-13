@@ -88,6 +88,7 @@ def _draw_page_job_list(
             ):
                 with tab:
                     draw(
+                        namespace=namespace,
                         function=function,
                         jobs=jobs_selected,
                     )
