@@ -114,7 +114,7 @@ def _draw_page_job_delete(
     ):
         for job in jobs:
             client.delete_job(
-                namespace=job.namespace(),
+                namespace=namespace,
                 function_name=function_name,
                 job_name=job.name(),
             )
@@ -141,13 +141,13 @@ def _draw_page_job_restart(
     ):
         for job in jobs:
             new_job = client.restart_job(
-                namespace=job.namespace(),
+                namespace=namespace,
                 function_name=function_name,
                 job_name=job.name(),
             )
             with st.spinner(f'Restarting ({job.name()})...'):
                 st.success(
-                    f'Requested Restarting ({job.namespace()} => {new_job.name()})',
+                    f'Requested Restarting ({job.name()} => {new_job.name()})',
                 )
         _draw_reload_is_required()
 
