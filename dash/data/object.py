@@ -6,6 +6,12 @@ class DashObject:
     def __init__(self, data: dict[Hashable, Any]) -> None:
         self.data = data
 
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, DashObject) \
+            and type(self) is type(value) \
+            and self.name() == value.name() \
+            and self.namespace() == value.namespace()
+
     def name(self) -> str:
         data = resolve_pointer(self.data, '/metadata/name', None)
         if isinstance(data, str) and data:

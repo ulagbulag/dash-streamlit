@@ -108,7 +108,7 @@ class ValueField:
 
     # BEGIN string formats
 
-    def _update_date_time(self) -> datetime.datetime | None:
+    def _update_date_time(self) -> str | None:
         spec = self._field['dateTime']
         default = spec.get('default')
 
@@ -130,18 +130,18 @@ class ValueField:
             label=self.title(),
             value=default,
         )
-        return datetime.datetime.combine(date, time)
+        return datetime.datetime.combine(date, time).isoformat()
 
-    def _update_ip(self) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
+    def _update_ip(self) -> str | None:
         try:
-            return ipaddress.ip_address(self._update_string(kind='ip'))
+            return str(ipaddress.ip_address(self._update_string(kind='ip')))
         except ValueError as e:
             st.warning(e)
             return None
 
-    def _update_uuid(self) -> uuid.UUID | None:
+    def _update_uuid(self) -> str | None:
         try:
-            return uuid.UUID(self._update_string(kind='uuid'))
+            return str(uuid.UUID(self._update_string(kind='uuid')))
         except ValueError as e:
             st.warning(e)
             return None

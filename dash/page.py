@@ -13,12 +13,10 @@ from dash.modules.field import ValueField
 client = DashClient()
 
 
-def draw_page(*, namespace: str, function_name: str) -> None:
-    # Get function
-    function = client.get_function(
-        namespace=namespace,
-        name=function_name,
-    )
+def draw_page(*, function: DashFunction) -> None:
+    # Get metadata
+    namespace = function.namespace()
+    function_name = function.name()
 
     # Page information
     st.title(function.title())
@@ -52,48 +50,51 @@ def _draw_page_job_list(
     )
 
     # Convert to DataFrame
-    df = to_dataframe(
-        items=[
-            j.data for j in jobs
-        ],
-        map=[
-            ('name', '/metadata/name/'),
-            ('state', '/status/state/'),
-            ('created at', '/metadata/creationTimestamp/'),
-            ('updated at', '/status/last_updated/'),
-        ],
-    )
-
-    # Show DataFrame and Select Data
-    jobs_selected = [
-        next(
-            job
-            for job in jobs
-            if job.name() == data['Name']
+    if jobs:
+        df = to_dataframe(
+            items=[
+                j.data for j in jobs
+            ],
+            map=[
+                ('name', '/metadata/name/'),
+                ('state', '/status/state/'),
+                ('created at', '/metadata/creationTimestamp/'),
+                ('updated at', '/status/last_updated/'),
+            ],
         )
-        for data in selector.dataframe(df) or []
-    ]
 
-    # Compose available actions
-    actions = {}
-    # if len(jobs_selected) == 1:
-    #     actions['show logs'] = _draw_page_job_show_logs
-    if len(jobs_selected) >= 1:
-        actions['delete'] = _draw_page_job_delete
-        actions['restart'] = _draw_page_job_restart
+        # Show DataFrame and Select Data
+        jobs_selected = [
+            next(
+                job
+                for job in jobs
+                if job.name() == data['Name']
+            )
+            for data in selector.dataframe(df) or []
+        ]
 
-    # Show actions
-    st.markdown('## :zap: Actions')
-    if actions:
-        for (tab, draw) in zip(
-            st.tabs([action.title() for action in actions]),
-            actions.values(),
-        ):
-            with tab:
-                draw(
-                    function=function,
-                    jobs=jobs_selected,
-                )
+        # Compose available actions
+        actions = {}
+        # if len(jobs_selected) == 1:
+        #     actions['show logs'] = _draw_page_job_show_logs
+        if len(jobs_selected) >= 1:
+            actions['delete'] = _draw_page_job_delete
+            actions['restart'] = _draw_page_job_restart
+
+        # Show actions
+        st.markdown('## :zap: Actions')
+        if actions:
+            for (tab, draw) in zip(
+                st.tabs([action.title() for action in actions]),
+                actions.values(),
+            ):
+                with tab:
+                    draw(
+                        function=function,
+                        jobs=jobs_selected,
+                    )
+    else:
+        st.info('Empty')
 
 
 def _draw_page_job_delete(
@@ -101,13 +102,17 @@ def _draw_page_job_delete(
     jobs: list[DashJob],
 ) -> None:
     # Get metadata
+    namespace = function.namespace()
     function_name = function.name()
 
     # Notify the caution
     _draw_caution_side_effect()
 
     # Apply
-    if st.button('Delete', key=f'{function_name}_delete'):
+    if st.button(
+        label='Delete',
+        key=f'/{namespace}/{function_name}/delete',
+    ):
         for job in jobs:
             client.delete_job(
                 namespace=job.namespace(),
@@ -116,9 +121,7 @@ def _draw_page_job_delete(
             )
             with st.spinner(f'Deleting ({job.name()})...'):
                 st.success(f'Requested Deleting ({job.name()})')
-
-            # Remove data
-            job.data = {}
+        _draw_reload_is_required()
 
 
 def _draw_page_job_restart(
@@ -126,13 +129,17 @@ def _draw_page_job_restart(
     jobs: list[DashJob],
 ) -> None:
     # Get metadata
+    namespace = function.namespace()
     function_name = function.name()
 
     # Notify the caution
     _draw_caution_side_effect()
 
     # Apply
-    if st.button('Restart', key=f'{function_name}_restart'):
+    if st.button(
+        label='Restart',
+        key=f'/{namespace}/{function_name}/restart',
+    ):
         for job in jobs:
             new_job = client.restart_job(
                 namespace=job.namespace(),
@@ -143,9 +150,7 @@ def _draw_page_job_restart(
                 st.success(
                     f'Requested Restarting ({job.namespace()} => {new_job.name()})',
                 )
-
-            # Replace data
-            job.data = new_job.data
+        _draw_reload_is_required()
 
 
 def _draw_page_run(
@@ -162,7 +167,10 @@ def _draw_page_run(
         value.set(field.title(), field.update())
 
     # Apply
-    if st.button('Create', key=f'{function_name}_run'):
+    if st.button(
+        label='Create',
+        key=f'/{namespace}/{function_name}/create',
+    ):
         with st.spinner('Creating...'):
             new_job = client.post_job(
                 namespace=namespace,
@@ -170,6 +178,7 @@ def _draw_page_run(
                 value=value.data,
             )
         st.success(f'Created ({new_job.name()})')
+        _draw_reload_is_required()
 
 
 def _draw_caution_side_effect() -> None:
@@ -180,3 +189,7 @@ This operation is **irreversible**.
 Running operations will be terminated.
 Unexpected shutdown may cause side effects!
 ''')
+
+
+def _draw_reload_is_required() -> None:
+    st.info(':information_source: Press `R` or `rerun` button to reload jobs!')

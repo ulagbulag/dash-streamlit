@@ -1,5 +1,5 @@
 from dash.data.object import DashObject
-from jsonpointer import set_pointer
+from jsonpointer import resolve_pointer, set_pointer
 from typing import Any
 
 
@@ -20,5 +20,6 @@ class DynamicObject(DashObject):
         for index in range(1, len(pointer)):
             sub_pointer = pointer[:index + 1]
             sub_key = '/'.join(sub_pointer)
-            set_pointer(self.data, sub_key, {}, inplace=True)
+            if resolve_pointer(self.data, sub_key, None) is None:
+                set_pointer(self.data, sub_key, {}, inplace=True)
         set_pointer(self.data, key, value, inplace=True)
