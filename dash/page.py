@@ -25,7 +25,7 @@ def draw_page(
     st.title(function.title())
 
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Show available commands
@@ -42,7 +42,7 @@ def draw_page(
             draw(
                 namespace=namespace,
                 function=function,
-                storage_namespace=f'/{user_name}/{namespace}/{function_name}',
+                storage_namespace=f'/{user_session}/{namespace}/{function_name}',
             )
 
 
@@ -113,7 +113,7 @@ def _draw_page_job_delete(
     jobs: list[DashJob],
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Notify the caution
@@ -122,7 +122,7 @@ def _draw_page_job_delete(
     # Apply
     if st.button(
         label='Delete',
-        key=f'/{user_name}/{namespace}/{function_name}/delete',
+        key=f'/{user_session}/{namespace}/{function_name}/delete',
     ):
         with st.spinner(f'Deleting...'):
             for job in jobs:
@@ -141,7 +141,7 @@ def _draw_page_job_restart(
     jobs: list[DashJob],
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Notify the caution
@@ -150,7 +150,7 @@ def _draw_page_job_restart(
     # Apply
     if st.button(
         label='Restart',
-        key=f'/{user_name}/{namespace}/{function_name}/restart',
+        key=f'/{user_session}/{namespace}/{function_name}/restart',
     ):
         with st.spinner(f'Restarting...'):
             for job in jobs:
@@ -171,7 +171,7 @@ def _draw_page_run(
     storage_namespace: str,
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Update inputs
@@ -195,7 +195,7 @@ def _draw_page_batch(
     storage_namespace: str,
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Compose available uploading methods
@@ -220,13 +220,13 @@ def _draw_page_batch_upload_as_csv(
     storage_namespace: str,
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Update inputs
     uploaded_file = st.file_uploader(
         label='Please upload a batch `.csv` file. A .csv template cat be found on `Run` tab.',
-        key=f'/{user_name}/{namespace}/{function_name}/batch/csv/upload',
+        key=f'/{user_session}/{namespace}/{function_name}/batch/csv/upload',
         accept_multiple_files=False,
         type=['csv'],
     )
@@ -256,7 +256,7 @@ def _draw_page_batch_upload_database(
     storage_namespace: str,
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Get user-saved keys
@@ -269,7 +269,7 @@ def _draw_page_batch_upload_database(
     # Select key
     key = st.selectbox(
         label='Select one of the templates below.',
-        key=f'/{user_name}/{namespace}/{function_name}/batch/database/upload',
+        key=f'/{user_session}/{namespace}/{function_name}/batch/database/upload',
         options=keys,
     )
     if not key:
@@ -340,13 +340,13 @@ def _draw_page_action_create(
     values: Union[DynamicObject, list[DynamicObject]],
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Apply
     if st.button(
         label='Click here to Submit',
-        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/create',
+        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/create',
     ):
         def execute(value: DynamicObject) -> None:
             with st.spinner('Creating...'):
@@ -375,7 +375,7 @@ def _draw_page_action_download_as_csv(
     values: Union[DynamicObject, list[DynamicObject]],
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Collect data
@@ -393,7 +393,7 @@ def _draw_page_action_download_as_csv(
     file_name = f'[{datetime.now().isoformat()}] {namespace}_{function.title_raw()}.csv'
     st.download_button(
         label='Download',
-        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/download/csv',
+        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/download/csv',
         data=data,
         file_name=file_name,
     )
@@ -407,7 +407,7 @@ def _draw_page_action_download_database(
     values: Union[DynamicObject, list[DynamicObject]],
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Notify the caution
@@ -423,12 +423,12 @@ def _draw_page_action_download_database(
     # Apply
     key = st.text_input(
         label='Save to Database',
-        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/download/database/key',
+        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/download/database/key',
         value=key or '',
     )
     if st.button(
         label='Save',
-        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/download/database/submit',
+        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/download/database/submit',
         disabled=not key,
     ) and key:
         with st.spinner('Saving...'):
@@ -446,7 +446,7 @@ def _draw_page_action_delete_database(
     values: Union[DynamicObject, list[DynamicObject]],
 ) -> None:
     # Get metadata
-    user_name = client.user_name()
+    user_session = client.user_session()
     function_name = function.name()
 
     # Notify the caution
@@ -462,13 +462,13 @@ def _draw_page_action_delete_database(
     # Apply
     st.text_input(
         label='Delete from Database',
-        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/delete/database/key',
+        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/delete/database/key',
         value=key,
         disabled=True,
     )
     if st.button(
         label='Delete',
-        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/delete/database',
+        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/delete/database',
     ):
         with storage.namespaced(storage_namespace) as s:
             s.set(key, None)

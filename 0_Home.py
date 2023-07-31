@@ -9,7 +9,7 @@ from dash.page import draw_page
 def load_functions(
     *,
     namespace: str | None = None,
-    user_name: int,
+    user_session: int,
 ):
     # Load DASH Client
     client = DashClient()
@@ -35,34 +35,34 @@ def load_functions(
 def load_pages():
     # Load DASH Client
     client = DashClient()
-    user_name = client.user_name()
+    user_session = client.user_session()
 
     # Load Functions
     with st.spinner('Initializing...'):
         try:
             functions = load_functions(
                 namespace='*',
-                user_name=user_name,
+                user_session=user_session,
             )
             is_admin = True
         except Exception:
             functions = load_functions(
-                user_name=user_name,
+                user_session=user_session,
             )
             is_admin = False
 
     # Load Cached Function
-    function_selected = st.session_state.get(f'/{user_name}', None)
+    function_selected = st.session_state.get(f'/{user_session}', None)
 
     # Load Pages
     with st.sidebar:
         if st.button(
             label=':house: Home',
-            key=f'/{user_name}/_',
+            key=f'/{user_session}/_',
             type='primary' if function_selected is None else 'secondary',
             use_container_width=True,
         ):
-            function_selected = st.session_state[f'/{user_name}'] = None
+            function_selected = st.session_state[f'/{user_session}'] = None
             st.experimental_rerun()
 
         for namespace, functions_namespaced in functions.items():
@@ -74,11 +74,11 @@ def load_pages():
                     )
                     if st.button(
                         label=function.title(),
-                        key=f'/{user_name}/{function.namespace()}/{function.name()}',
+                        key=f'/{user_session}/{function.namespace()}/{function.name()}',
                         type='primary' if function == function_selected else 'secondary',
                         use_container_width=True,
                     ):
-                        function_selected = st.session_state[f'/{user_name}'] = function
+                        function_selected = st.session_state[f'/{user_session}'] = function
                         st.experimental_rerun()
 
     # Load Selected Page

@@ -64,7 +64,7 @@ class DashClient:
         raise Exception(
             f'Failed to execute {path}: status code [{response.status_code}]')
 
-    def user_name(self) -> int:
+    def user_session(self) -> int:
         cookie = (_get_websocket_headers() or {}).get('Cookie')
         if not cookie:
             st.error('Login is required!')
