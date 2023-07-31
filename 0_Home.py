@@ -36,6 +36,7 @@ def load_pages():
     # Load DASH Client
     client = DashClient()
     user_session = client.user_session()
+    user_name = client.user_name()
 
     # Load Functions
     with st.spinner('Initializing...'):
@@ -86,6 +87,7 @@ def load_pages():
         draw_page(
             namespace=function_selected.namespace() if is_admin else None,
             function=function_selected,
+            user_name=user_name,
         )
     else:
         _draw_home_page()

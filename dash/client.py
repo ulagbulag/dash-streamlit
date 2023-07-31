@@ -64,6 +64,13 @@ class DashClient:
         raise Exception(
             f'Failed to execute {path}: status code [{response.status_code}]')
 
+    def user_name(self) -> str:
+        user = self._call_raw(
+            method='GET',
+            path=f'/user/',
+        )
+        return user['spec']['user_name']
+
     def user_session(self) -> int:
         cookie = (_get_websocket_headers() or {}).get('Cookie')
         if not cookie:

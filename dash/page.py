@@ -20,6 +20,7 @@ storage = LocalStorage()
 
 def draw_page(
     *, namespace: str | None, function: DashFunction,
+    user_name: str,
 ) -> None:
     # Page information
     st.title(function.title())
@@ -42,7 +43,7 @@ def draw_page(
             draw(
                 namespace=namespace,
                 function=function,
-                storage_namespace=f'/{user_session}/{namespace}/{function_name}',
+                storage_namespace=f'/{user_name}/{namespace}/{function_name}',
             )
 
 
