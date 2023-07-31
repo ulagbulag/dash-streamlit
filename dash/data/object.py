@@ -25,6 +25,9 @@ class DashObject:
         raise Exception('cannot get the namespace of the object')
 
     def title(self) -> str:
+        return self.title_raw().title().replace('-', ' ')
+
+    def title_raw(self) -> str:
         name = '???'
         for pointer in [
             '/metadata/labels/dash.ulagbulag.io~1alias',
@@ -35,4 +38,4 @@ class DashObject:
                 name = data
                 break
 
-        return name.title().replace('-', ' ')
+        return name

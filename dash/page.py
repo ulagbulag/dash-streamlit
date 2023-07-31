@@ -1,4 +1,7 @@
+from datetime import datetime
+from typing import Optional, Union
 import streamlit as st
+# from st_files_connection import FilesConnection
 
 from dash.client import DashClient
 from dash.data.dynamic import DynamicObject
@@ -7,10 +10,12 @@ from dash.data.job import DashJob
 from dash.modules import selector
 from dash.modules.converter import to_dataframe
 from dash.modules.field import ValueField
+from dash.storage.local import LocalStorage
 
 
 # Create engines
 client = DashClient()
+storage = LocalStorage()
 
 
 def draw_page(
@@ -19,10 +24,15 @@ def draw_page(
     # Page information
     st.title(function.title())
 
+    # Get metadata
+    user_name = client.user_name()
+    function_name = function.name()
+
     # Show available commands
     commands = {
         'job list': _draw_page_job_list,
         'run': _draw_page_run,
+        'batch': _draw_page_batch,
     }
     for (tab, draw) in zip(
         st.tabs([command.title() for command in commands]),
@@ -32,11 +42,13 @@ def draw_page(
             draw(
                 namespace=namespace,
                 function=function,
+                storage_namespace=f'/{user_name}/{namespace}/{function_name}',
             )
 
 
 def _draw_page_job_list(
     *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
 ) -> None:
     # Get metadata
     function_name = function.name()
@@ -80,7 +92,7 @@ def _draw_page_job_list(
             actions['restart'] = _draw_page_job_restart
 
         # Show actions
-        st.markdown('## :zap: Actions')
+        st.markdown('#### :zap: Actions')
         if actions:
             for (tab, draw) in zip(
                 st.tabs([action.title() for action in actions]),
@@ -112,14 +124,15 @@ def _draw_page_job_delete(
         label='Delete',
         key=f'/{user_name}/{namespace}/{function_name}/delete',
     ):
-        for job in jobs:
-            client.delete_job(
-                namespace=namespace,
-                function_name=function_name,
-                job_name=job.name(),
-            )
-            with st.spinner(f'Deleting ({job.name()})...'):
-                st.success(f'Requested Deleting ({job.name()})')
+        with st.spinner(f'Deleting...'):
+            for job in jobs:
+                client.delete_job(
+                    namespace=namespace,
+                    function_name=function_name,
+                    job_name=job.name(),
+                )
+                with st.spinner(f'Deleting ({job.name()})...'):
+                    st.success(f'Requested Deleting ({job.name()})')
         _draw_reload_is_required()
 
 
@@ -139,21 +152,23 @@ def _draw_page_job_restart(
         label='Restart',
         key=f'/{user_name}/{namespace}/{function_name}/restart',
     ):
-        for job in jobs:
-            new_job = client.restart_job(
-                namespace=namespace,
-                function_name=function_name,
-                job_name=job.name(),
-            )
-            with st.spinner(f'Restarting ({job.name()})...'):
-                st.success(
-                    f'Requested Restarting ({job.name()} => {new_job.name()})',
+        with st.spinner(f'Restarting...'):
+            for job in jobs:
+                new_job = client.restart_job(
+                    namespace=namespace,
+                    function_name=function_name,
+                    job_name=job.name(),
                 )
+                with st.spinner(f'Restarting ({job.name()})...'):
+                    st.success(
+                        f'Requested Restarting ({job.name()} => {new_job.name()})',
+                    )
         _draw_reload_is_required()
 
 
 def _draw_page_run(
     *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
 ) -> None:
     # Get metadata
     user_name = client.user_name()
@@ -165,18 +180,299 @@ def _draw_page_run(
         field = ValueField(namespace, field)
         value.set(field.title(), field.update())
 
+    # Show actions
+    return _draw_page_action(
+        namespace=namespace,
+        function=function,
+        storage_namespace=storage_namespace,
+        prefix='run',
+        values=value,
+    )
+
+
+def _draw_page_batch(
+    *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
+) -> None:
+    # Get metadata
+    user_name = client.user_name()
+    function_name = function.name()
+
+    # Compose available uploading methods
+    st.write('#### :anchor: Data Source')
+    methods = [
+        ('Database', _draw_page_batch_upload_database),
+        ('Upload `.csv`', _draw_page_batch_upload_as_csv),
+    ]
+
+    # Upload inputs as csv
+    for (_, method), tab in zip(methods, st.tabs([name for (name, _) in methods])):
+        with tab:
+            method(
+                namespace=namespace,
+                function=function,
+                storage_namespace=storage_namespace,
+            )
+
+
+def _draw_page_batch_upload_as_csv(
+    *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
+) -> None:
+    # Get metadata
+    user_name = client.user_name()
+    function_name = function.name()
+
+    # Update inputs
+    uploaded_file = st.file_uploader(
+        label='Please upload a batch `.csv` file. A .csv template cat be found on `Run` tab.',
+        key=f'/{user_name}/{namespace}/{function_name}/batch/csv/upload',
+        accept_multiple_files=False,
+        type=['csv'],
+    )
+    if uploaded_file is None:
+        return
+
+    # Parse inputs
+    template = DynamicObject(function.data['spec']['input'])
+    values = template.from_csv(uploaded_file.getvalue())
+
+    # Show inputs
+    st.write(DynamicObject.collect_to_dataframe(values))
+
+    # Show actions
+    if len(values):
+        return _draw_page_action(
+            namespace=namespace,
+            function=function,
+            storage_namespace=storage_namespace,
+            prefix='batch/csv',
+            values=values,
+        )
+
+
+def _draw_page_batch_upload_database(
+    *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
+) -> None:
+    # Get metadata
+    user_name = client.user_name()
+    function_name = function.name()
+
+    # Get user-saved keys
+    with storage.namespaced(storage_namespace) as s:
+        keys = s.list()
+    if not keys:
+        st.info('Empty')
+        return
+
+    # Select key
+    key = st.selectbox(
+        label='Select one of the templates below.',
+        key=f'/{user_name}/{namespace}/{function_name}/batch/database/upload',
+        options=keys,
+    )
+    if not key:
+        return
+
+    # Update inputs
+    with storage.namespaced(storage_namespace) as s:
+        data = s.get(key)
+    if data is None:
+        raise FileNotFoundError(f'No such key: {key}')
+
+    # Parse inputs
+    template = DynamicObject(function.data['spec']['input'])
+    values = template.from_csv(data)
+
+    # Show inputs
+    st.write(DynamicObject.collect_to_dataframe(values))
+
+    # Show actions
+    if key:
+        return _draw_page_action(
+            namespace=namespace,
+            function=function,
+            storage_namespace=storage_namespace,
+            prefix='batch/database',
+            key=key,
+            values=values,
+        )
+
+
+def _draw_page_action(
+    *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
+    prefix: str,
+    values: Union[DynamicObject, list[DynamicObject]],
+    key: Optional[str] = None,
+) -> None:
+    # Compose available actions
+    st.write('#### :zap: Actions')
+    actions = [
+        ('Create', _draw_page_action_create),
+        ('Download as `.csv`', _draw_page_action_download_as_csv),
+        ('Save to Database', _draw_page_action_download_database),
+    ]
+    if key:
+        actions.append(
+            ('Delete from Database', _draw_page_action_delete_database),
+        )
+
+    # Show actions
+    for (_, action), column in zip(actions, st.tabs([name for name, _ in actions])):
+        with column:
+            action(
+                namespace=namespace,
+                function=function,
+                storage_namespace=storage_namespace,
+                prefix=prefix,
+                key=key,
+                values=values,
+            )
+
+
+def _draw_page_action_create(
+    *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
+    prefix: str,
+    key: Optional[str],
+    values: Union[DynamicObject, list[DynamicObject]],
+) -> None:
+    # Get metadata
+    user_name = client.user_name()
+    function_name = function.name()
+
     # Apply
     if st.button(
-        label='Create',
-        key=f'/{user_name}/{namespace}/{function_name}/create',
+        label='Click here to Submit',
+        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/create',
     ):
-        with st.spinner('Creating...'):
-            new_job = client.post_job(
-                namespace=namespace,
-                function_name=function_name,
-                value=value.data,
-            )
-        st.success(f'Created ({new_job.name()})')
+        def execute(value: DynamicObject) -> None:
+            with st.spinner('Creating...'):
+                new_job = client.post_job(
+                    namespace=namespace,
+                    function_name=function_name,
+                    value=value.data,
+                )
+            st.success(f'Created ({new_job.name()})')
+
+        if isinstance(values, DynamicObject):
+            value = values
+            execute(value)
+        else:
+            with st.spinner('Batch Creating...'):
+                for value in values:
+                    execute(value)
+        _draw_reload_is_required()
+
+
+def _draw_page_action_download_as_csv(
+    *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
+    prefix: str,
+    key: Optional[str],
+    values: Union[DynamicObject, list[DynamicObject]],
+) -> None:
+    # Get metadata
+    user_name = client.user_name()
+    function_name = function.name()
+
+    # Collect data
+    if isinstance(values, DynamicObject):
+        value = values
+        data = value.to_csv()
+    else:
+        data = DynamicObject.collect_to_csv(values)
+
+    # Get filename
+    file_name = f'[{datetime.now().isoformat()}] {namespace}_{function.title_raw()}.csv'
+    st.caption(f'* File Name: {file_name}')
+
+    # Apply
+    file_name = f'[{datetime.now().isoformat()}] {namespace}_{function.title_raw()}.csv'
+    st.download_button(
+        label='Download',
+        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/download/csv',
+        data=data,
+        file_name=file_name,
+    )
+
+
+def _draw_page_action_download_database(
+    *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
+    prefix: str,
+    key: Optional[str],
+    values: Union[DynamicObject, list[DynamicObject]],
+) -> None:
+    # Get metadata
+    user_name = client.user_name()
+    function_name = function.name()
+
+    # Notify the caution
+    _draw_caution_side_effect()
+
+    # Collect data
+    if isinstance(values, DynamicObject):
+        value = values
+        data = value.to_csv()
+    else:
+        data = DynamicObject.collect_to_csv(values)
+
+    # Apply
+    key = st.text_input(
+        label='Save to Database',
+        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/download/database/key',
+        value=key or '',
+    )
+    if st.button(
+        label='Save',
+        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/download/database/submit',
+        disabled=not key,
+    ) and key:
+        with st.spinner('Saving...'):
+            with storage.namespaced(storage_namespace) as s:
+                s.set(key, data)
+        st.success(':floppy_disk: Saved!')
+        _draw_reload_is_required()
+
+
+def _draw_page_action_delete_database(
+    *, namespace: str | None, function: DashFunction,
+    storage_namespace: str,
+    prefix: str,
+    key: str,
+    values: Union[DynamicObject, list[DynamicObject]],
+) -> None:
+    # Get metadata
+    user_name = client.user_name()
+    function_name = function.name()
+
+    # Notify the caution
+    _draw_caution_side_effect()
+
+    # Collect data
+    if isinstance(values, DynamicObject):
+        value = values
+        data = value.to_csv()
+    else:
+        data = DynamicObject.collect_to_csv(values)
+
+    # Apply
+    st.text_input(
+        label='Delete from Database',
+        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/delete/database/key',
+        value=key,
+        disabled=True,
+    )
+    if st.button(
+        label='Delete',
+        key=f'/{user_name}/{namespace}/{function_name}/{prefix}/delete/database',
+    ):
+        with storage.namespaced(storage_namespace) as s:
+            s.set(key, None)
+        st.success(f':x: Deleted ({key})')
         _draw_reload_is_required()
 
 

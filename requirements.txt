@@ -1,3 +1,4 @@
+git+https://github.com/streamlit/files-connection
 inflect
 inflection
 jsonpointer
@@ -6,3 +7,4 @@ scikit-learn
 streamlit
 streamlit-aggrid
 pandas
+s3fs
