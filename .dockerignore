@@ -170,5 +170,8 @@ cython_debug/
 /.dockerignore
 /Dockerfile
 
+# Justfile
+/Justfile
+
 # Documentation
 /README.md

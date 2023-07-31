@@ -27,4 +27,4 @@ oci-push: oci-build
   docker push "${OCI_IMAGE}:${OCI_IMAGE_VERSION}"
 
 oci-push-and-update-dash: oci-push
-  kubectl -n kiss delete pods --selector name=management-tool
+  kubectl -n dash delete pods --selector name=management-tool
