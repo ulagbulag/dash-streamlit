@@ -69,7 +69,7 @@ class DashClient:
             method='GET',
             path=f'/user/',
         )
-        return user['spec']['user_name']
+        return user['user_name']
 
     def user_session(self) -> int:
         cookie = (_get_websocket_headers() or {}).get('Cookie')
