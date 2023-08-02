@@ -69,7 +69,7 @@ def _draw_page_database(
     command = data.decode('utf-8')
 
     # Show command
-    st.text_input(
+    command = st.text_input(
         label='Please enter the command to execute for all PCs.',
         key=f'/{user_session}/plugin/{namespace}/{feature_name}/batch/database/command',
         value=command,
