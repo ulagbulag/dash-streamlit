@@ -29,6 +29,7 @@ class DashClient:
     def _call_raw(
         self, *, namespace: str | None = None,
         method: str, path: str, value: Any = None,
+        ok: bool = False,
     ) -> Any:
         headers = _get_websocket_headers() or {}
         headers_pass_through = [
@@ -50,6 +51,14 @@ class DashClient:
             json=value,
         )
 
+        if response.status_code != 200:
+            raise Exception(
+                f'Failed to execute {path}: status code [{response.status_code}]',
+            )
+
+        if ok:
+            return None
+
         if response.text:
             data = response.json()
         else:
@@ -63,13 +72,6 @@ class DashClient:
             raise Exception(f'Failed to execute {path}: {data["spec"]}')
         raise Exception(
             f'Failed to execute {path}: status code [{response.status_code}]')
-
-    def user_name(self) -> str:
-        user = self._call_raw(
-            method='GET',
-            path=f'/user/',
-        )
-        return user['user_name']
 
     def user_session(self) -> int:
         cookie = (_get_websocket_headers() or {}).get('Cookie')
@@ -146,6 +148,20 @@ class DashClient:
                 value=value,
             ),
         )
+
+    def post_job_batch(
+        self, *, payload: list[dict[str, Any]],
+    ) -> list[DashJob]:
+        return [
+            DashJob(
+                data=data
+            )
+            for data in self._call_raw(
+                method='POST',
+                path=f'/batch/job/',
+                value=payload,
+            )
+        ]
 
     def restart_job(
         self, *, namespace: str | None = None,
@@ -252,3 +268,36 @@ class DashClient:
                 path=f'/model/{name}/item/',
             )
         ]
+
+    def get_user_name(self) -> str:
+        user = self._call_raw(
+            method='GET',
+            path=f'/user/',
+        )
+        return user['userName']
+
+    def post_user_exec(
+        self, *, namespace: str | None = None,
+        command: str,
+    ) -> None:
+        return self._call_raw(
+            namespace=namespace,
+            method='POST',
+            path=f'/user/desktop/exec/',
+            value=_parse_command(command),
+        )
+
+    def post_user_exec_broadcast(self, command: str) -> None:
+        return self._call_raw(
+            method='POST',
+            path=f'/batch/user/desktop/exec/broadcast/',
+            value=_parse_command(command),
+        )
+
+
+def _parse_command(raw: str) -> list[str]:
+    return [
+        '/bin/sh',
+        '-c',
+        raw,
+    ]

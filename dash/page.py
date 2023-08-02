@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Optional, Union
 import streamlit as st
-# from st_files_connection import FilesConnection
+from typing import Optional, Union
 
+from dash import common
 from dash.client import DashClient
 from dash.data.dynamic import DynamicObject
 from dash.data.function import DashFunction
@@ -43,7 +43,7 @@ def draw_page(
             draw(
                 namespace=namespace,
                 function=function,
-                storage_namespace=f'/{user_name}/{namespace}/{function_name}',
+                storage_namespace=f'/{user_name}/{namespace}/functions/{function_name}',
             )
 
 
@@ -70,7 +70,7 @@ def _draw_page_job_list(
                 ('name', '/metadata/name/'),
                 ('state', '/status/state/'),
                 ('created at', '/metadata/creationTimestamp/'),
-                ('updated at', '/status/last_updated/'),
+                ('updated at', '/status/lastUpdated/'),
             ],
         )
 
@@ -118,12 +118,12 @@ def _draw_page_job_delete(
     function_name = function.name()
 
     # Notify the caution
-    _draw_caution_side_effect()
+    common.draw_caution_side_effect_operation()
 
     # Apply
     if st.button(
         label='Delete',
-        key=f'/{user_session}/{namespace}/{function_name}/delete',
+        key=f'/{user_session}/function/{namespace}/{function_name}/delete',
     ):
         with st.spinner(f'Deleting...'):
             for job in jobs:
@@ -134,7 +134,7 @@ def _draw_page_job_delete(
                 )
                 with st.spinner(f'Deleting ({job.name()})...'):
                     st.success(f'Requested Deleting ({job.name()})')
-        _draw_reload_is_required()
+        common.draw_reload_is_required()
 
 
 def _draw_page_job_restart(
@@ -146,12 +146,12 @@ def _draw_page_job_restart(
     function_name = function.name()
 
     # Notify the caution
-    _draw_caution_side_effect()
+    common.draw_caution_side_effect_operation()
 
     # Apply
     if st.button(
         label='Restart',
-        key=f'/{user_session}/{namespace}/{function_name}/restart',
+        key=f'/{user_session}/function/{namespace}/{function_name}/restart',
     ):
         with st.spinner(f'Restarting...'):
             for job in jobs:
@@ -164,7 +164,7 @@ def _draw_page_job_restart(
                     st.success(
                         f'Requested Restarting ({job.name()} => {new_job.name()})',
                     )
-        _draw_reload_is_required()
+        common.draw_reload_is_required()
 
 
 def _draw_page_run(
@@ -227,7 +227,7 @@ def _draw_page_batch_upload_as_csv(
     # Update inputs
     uploaded_file = st.file_uploader(
         label='Please upload a batch `.csv` file. A .csv template cat be found on `Run` tab.',
-        key=f'/{user_session}/{namespace}/{function_name}/batch/csv/upload',
+        key=f'/{user_session}/function/{namespace}/{function_name}/batch/csv/upload',
         accept_multiple_files=False,
         type=['csv'],
     )
@@ -270,7 +270,7 @@ def _draw_page_batch_upload_database(
     # Select key
     key = st.selectbox(
         label='Select one of the templates below.',
-        key=f'/{user_session}/{namespace}/{function_name}/batch/database/upload',
+        key=f'/{user_session}/function/{namespace}/{function_name}/batch/database/upload',
         options=keys,
     )
     if not key:
@@ -290,7 +290,7 @@ def _draw_page_batch_upload_database(
     st.write(DynamicObject.collect_to_dataframe(values))
 
     # Show actions
-    if key:
+    if key and len(values):
         return _draw_page_action(
             namespace=namespace,
             function=function,
@@ -347,9 +347,10 @@ def _draw_page_action_create(
     # Apply
     if st.button(
         label='Click here to Submit',
-        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/create',
+        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/create',
     ):
-        def execute(value: DynamicObject) -> None:
+        if isinstance(values, DynamicObject):
+            value = values
             with st.spinner('Creating...'):
                 new_job = client.post_job(
                     namespace=namespace,
@@ -357,15 +358,24 @@ def _draw_page_action_create(
                     value=value.data,
                 )
             st.success(f'Created ({new_job.name()})')
-
-        if isinstance(values, DynamicObject):
-            value = values
-            execute(value)
         else:
             with st.spinner('Batch Creating...'):
-                for value in values:
-                    execute(value)
-        _draw_reload_is_required()
+                new_jobs = client.post_job_batch(
+                    payload=[
+                        {
+                            'namespace': namespace,
+                            'functionName': function_name,
+                            'value': value.data,
+                        }
+                        for value in values
+                    ],
+                )
+                new_jobs_names = ', '.join(
+                    job.name()
+                    for job in new_jobs
+                )
+                st.success(f'Created ({new_jobs_names})')
+        common.draw_reload_is_required()
 
 
 def _draw_page_action_download_as_csv(
@@ -394,7 +404,7 @@ def _draw_page_action_download_as_csv(
     file_name = f'[{datetime.now().isoformat()}] {namespace}_{function.title_raw()}.csv'
     st.download_button(
         label='Download',
-        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/download/csv',
+        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/download/csv',
         data=data,
         file_name=file_name,
     )
@@ -412,7 +422,7 @@ def _draw_page_action_download_database(
     function_name = function.name()
 
     # Notify the caution
-    _draw_caution_side_effect()
+    common.draw_caution_side_effect_database()
 
     # Collect data
     if isinstance(values, DynamicObject):
@@ -424,19 +434,19 @@ def _draw_page_action_download_database(
     # Apply
     key = st.text_input(
         label='Save to Database',
-        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/download/database/key',
+        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/download/database/key',
         value=key or '',
     )
     if st.button(
         label='Save',
-        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/download/database/submit',
+        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/download/database/submit',
         disabled=not key,
     ) and key:
         with st.spinner('Saving...'):
             with storage.namespaced(storage_namespace) as s:
                 s.set(key, data)
         st.success(':floppy_disk: Saved!')
-        _draw_reload_is_required()
+        common.draw_reload_is_required()
 
 
 def _draw_page_action_delete_database(
@@ -451,41 +461,20 @@ def _draw_page_action_delete_database(
     function_name = function.name()
 
     # Notify the caution
-    _draw_caution_side_effect()
-
-    # Collect data
-    if isinstance(values, DynamicObject):
-        value = values
-        data = value.to_csv()
-    else:
-        data = DynamicObject.collect_to_csv(values)
+    common.draw_caution_side_effect_database()
 
     # Apply
     st.text_input(
         label='Delete from Database',
-        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/delete/database/key',
+        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/delete/database/key',
         value=key,
         disabled=True,
     )
     if st.button(
         label='Delete',
-        key=f'/{user_session}/{namespace}/{function_name}/{prefix}/delete/database',
+        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/delete/database',
     ):
         with storage.namespaced(storage_namespace) as s:
             s.set(key, None)
         st.success(f':x: Deleted ({key})')
-        _draw_reload_is_required()
-
-
-def _draw_caution_side_effect() -> None:
-    st.warning('''
-### :warning: Caution
-
-This operation is **irreversible**.
-Running operations will be terminated.
-Unexpected shutdown may cause side effects!
-''')
-
-
-def _draw_reload_is_required() -> None:
-    st.info(':information_source: Press `R` or `rerun` button to reload jobs!')
+        common.draw_reload_is_required()
