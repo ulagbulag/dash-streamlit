@@ -18,7 +18,7 @@ class SearchEngine:
 
     def __init__(self) -> None:
         try:
-            import hole
+            import hole  # type: ignore
             self._engine = hole.SearchEngine.from_yaml_file(
                 path=os.environ.get(
                     'HOLE_SEARCH_ENGINE_PATH',
