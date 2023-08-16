@@ -9,6 +9,7 @@ from dash.data.function import DashFunction
 from dash.data.job import DashJob
 from dash.data.model import DashModel
 from dash.data.resource import ResourceRef
+from dash.data.user import User
 
 
 class DashClient:
@@ -269,12 +270,13 @@ class DashClient:
             )
         ]
 
-    def get_user_name(self) -> str:
-        user = self._call_raw(
-            method='GET',
-            path=f'/user/',
+    def get_user(self) -> User:
+        return User(
+            data=self._call_raw(
+                method='GET',
+                path=f'/user/',
+            ),
         )
-        return user['userName']
 
     def post_user_exec(
         self, *, namespace: str | None = None,

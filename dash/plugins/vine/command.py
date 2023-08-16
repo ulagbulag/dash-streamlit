@@ -122,7 +122,7 @@ def _draw_page_action(
     command: str,
 ) -> None:
     # Compose available actions
-    st.write('#### :zap: Actions')
+    st.subheader(':zap: Actions')
     actions = [
         ('Run', _draw_page_action_run),
         ('Save to Database', _draw_page_action_download_database),

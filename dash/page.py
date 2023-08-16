@@ -7,6 +7,7 @@ from dash.client import DashClient
 from dash.data.dynamic import DynamicObject
 from dash.data.function import DashFunction
 from dash.data.job import DashJob
+from dash.data.user import User
 from dash.modules import selector
 from dash.modules.converter import to_dataframe
 from dash.modules.field import ValueField
@@ -20,14 +21,14 @@ storage = LocalStorage()
 
 def draw_page(
     *, namespace: str | None, function: DashFunction,
-    user_name: str,
+    user: User,
 ) -> None:
     # Page information
     st.title(function.title())
 
     # Get metadata
-    user_session = client.user_session()
     function_name = function.name()
+    user_name = user.get_user_name()
 
     # Show available commands
     commands = {
@@ -43,7 +44,12 @@ def draw_page(
             draw(
                 namespace=namespace,
                 function=function,
-                storage_namespace=f'/{user_name}/{namespace}/functions/{function_name}',
+                storage_namespace=storage.get_namespace(
+                    user_name=user_name,
+                    kind='functions',
+                    namespace=namespace,
+                    name=function_name,
+                ),
             )
 
 
@@ -93,7 +99,7 @@ def _draw_page_job_list(
             actions['restart'] = _draw_page_job_restart
 
         # Show actions
-        st.markdown('#### :zap: Actions')
+        st.subheader(':zap: Actions')
         if actions:
             for (tab, draw) in zip(
                 st.tabs([action.title() for action in actions]),
@@ -171,10 +177,6 @@ def _draw_page_run(
     *, namespace: str | None, function: DashFunction,
     storage_namespace: str,
 ) -> None:
-    # Get metadata
-    user_session = client.user_session()
-    function_name = function.name()
-
     # Update inputs
     value = DynamicObject(function.data['spec']['input'])
     for field in value.fields():
@@ -195,12 +197,8 @@ def _draw_page_batch(
     *, namespace: str | None, function: DashFunction,
     storage_namespace: str,
 ) -> None:
-    # Get metadata
-    user_session = client.user_session()
-    function_name = function.name()
-
     # Compose available uploading methods
-    st.write('#### :anchor: Data Source')
+    st.subheader(':anchor: Data Source')
     methods = [
         ('Database', _draw_page_batch_upload_database),
         ('Upload `.csv`', _draw_page_batch_upload_as_csv),
@@ -309,7 +307,7 @@ def _draw_page_action(
     key: Optional[str] = None,
 ) -> None:
     # Compose available actions
-    st.write('#### :zap: Actions')
+    st.subheader(':zap: Actions')
     actions = [
         ('Create', _draw_page_action_create),
         ('Download as `.csv`', _draw_page_action_download_as_csv),

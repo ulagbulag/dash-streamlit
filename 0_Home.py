@@ -4,6 +4,7 @@ from types import ModuleType
 
 from dash import plugins as _plugins
 from dash.client import DashClient
+from dash.home import draw_page as _draw_home_page
 from dash.page import draw_page
 
 
@@ -37,8 +38,8 @@ def load_functions(
 def load_pages():
     # Load DASH Client
     client = DashClient()
+    user = client.get_user()
     user_session = client.user_session()
-    user_name = client.get_user_name()
 
     # Load Plugins
     plugins = {
@@ -130,7 +131,7 @@ def load_pages():
         draw_page(
             namespace=function_selected.namespace() if is_admin else None,
             function=function_selected,
-            user_name=user_name,
+            user=user,
         )
     elif plugin_selected is not None:
         namespace, feature_name, _draw_page = \
@@ -138,15 +139,13 @@ def load_pages():
         _draw_page(
             namespace=namespace,
             feature_name=feature_name,
-            user_name=user_name,
+            user=user,
         )
     else:
-        _draw_home_page()
-
-
-def _draw_home_page() -> None:
-    # Page Information
-    st.title('Welcome to OpenARK Dashboard')
+        _draw_home_page(
+            functions=functions,
+            user=user,
+        )
 
 
 if __name__ == '__main__':

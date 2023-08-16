@@ -31,6 +31,15 @@ class LocalStorage(BaseStorage):
         encoded_key = base64.b64encode(key.encode('utf-8')).decode('utf-8')
         return parent.joinpath(f'./{encoded_key}.csv')
 
+    def get_namespace(
+        self,
+        user_name: str,
+        kind: str,
+        namespace: str | None,
+        name: str,
+    ) -> str:
+        return f'/{user_name}/{namespace or "_"}/{kind}/{name}'
+
     def list(self, namespace: str) -> list[str]:
         return [
             base64.b64decode(file.name[:-4]).decode('utf-8')
