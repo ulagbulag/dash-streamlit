@@ -3,6 +3,7 @@ from typing import Optional
 
 from dash import common
 from dash.client import DashClient
+from dash.data.user import User
 from dash.storage.local import LocalStorage
 
 
@@ -13,10 +14,13 @@ storage = LocalStorage()
 
 def draw_page(
     *, namespace: str, feature_name: str,
-    user_name: str,
+    user: User,
 ) -> None:
     # Page information
     st.title('Command')
+
+    # Get metadata
+    user_name = user.get_user_name()
 
     # Show available commands
     commands = {
