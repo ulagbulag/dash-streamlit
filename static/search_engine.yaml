@@ -1,3 +1,4 @@
 ---
-model: MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
-score_threshold: 0.666666
+# model: MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
+model: pongjin/roberta_with_kornli
+score_threshold: 0.75

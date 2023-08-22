@@ -32,18 +32,18 @@ def draw_page(
     commands = []
     for namespace, functions_namespaced in functions.items():
         for function in functions_namespaced:
-            command = Command(
-                kind='functions',
-                name=function.name,
-                namespace=function.namespace,
-                key=None,
-            )
-            commands.append(command)
-            search_engine.add_function(
-                function=command.search_engine_function_name,
-                action=command.action,
-                witnesses=[],
-            )
+            # command = Command(
+            #     kind='functions',
+            #     name=function.name,
+            #     namespace=function.namespace,
+            #     key=None,
+            # )
+            # commands.append(command)
+            # search_engine.add_function(
+            #     function=command.search_engine_function_name,
+            #     action=command.action,
+            #     witnesses=[],
+            # )
             with storage.namespaced(storage.get_namespace(
                 user_name=user_name,
                 kind='functions',
@@ -75,7 +75,6 @@ def draw_page(
     # Search actions
     actions = search_engine.search(
         query=query,
-        force=False,
     )
     if not actions:
         st.info('Empty')

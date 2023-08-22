@@ -41,4 +41,6 @@ class Command:
         return hash(repr(self))
 
     def __repr__(self) -> str:
+        if self.key:
+            return f'[{self.namespace}] {self.key}'
         return f'[{self.namespace}] {self.name.title().replace("-", " ")}'
