@@ -79,6 +79,12 @@ def _draw_page_database(
         value=command,
     )
 
+    # Show options
+    option_terminal = st.checkbox(
+        label='Open with a new Terminal (GUI Command)',
+        key=f'/{user_session}/plugin/{namespace}/{feature_name}/batch/database/option/terminal',
+    )
+
     # Show actions
     if key and command:
         return _draw_page_action(
@@ -89,6 +95,7 @@ def _draw_page_database(
             prefix='batch/database',
             key=key,
             command=command,
+            option_terminal=option_terminal,
         )
 
 
@@ -104,18 +111,24 @@ def _draw_page_execute(
         label='Please enter the command to execute for all PCs.',
         key=f'/{user_session}/plugin/{namespace}/{feature_name}/batch/raw/command',
     )
-    if not command:
-        return
+
+    # Show options
+    option_terminal = st.checkbox(
+        label='Open with a new Terminal (GUI Command)',
+        key=f'/{user_session}/plugin/{namespace}/{feature_name}/batch/raw/option/terminal',
+    )
 
     # Show actions
-    return _draw_page_action(
-        namespace=namespace,
-        feature_name=feature_name,
-        user_name=user_name,
-        storage_namespace=storage_namespace,
-        prefix='batch/raw',
-        command=command,
-    )
+    if command:
+        return _draw_page_action(
+            namespace=namespace,
+            feature_name=feature_name,
+            user_name=user_name,
+            storage_namespace=storage_namespace,
+            prefix='batch/raw',
+            command=command,
+            option_terminal=option_terminal,
+        )
 
 
 def _draw_page_action(
@@ -124,6 +137,7 @@ def _draw_page_action(
     prefix: str,
     key: Optional[str] = None,
     command: str,
+    option_terminal: bool,
 ) -> None:
     # Compose available actions
     st.subheader(':zap: Actions')
@@ -135,6 +149,10 @@ def _draw_page_action(
         actions.append(
             ('Delete from Database', _draw_page_action_delete_database),
         )
+
+    # Apply options on command
+    if option_terminal:
+        command = f'xfce4-terminal -e \'{command}\''
 
     # Show actions
     for (_, action), column in zip(actions, st.tabs([name for name, _ in actions])):
