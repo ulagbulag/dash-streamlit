@@ -100,7 +100,7 @@ def load_pages():
                     for feature_name in plugins[namespace]:
                         feature = plugins[namespace][feature_name]
                         if st.button(
-                            label=feature_name.title(),
+                            label=feature_name.title().replace('_', ' '),
                             key=f'/{user_session}/plugin/{namespace}/{feature_name}',
                             type='primary' if feature[:2] == plugin_selected else 'secondary',
                             use_container_width=True,
