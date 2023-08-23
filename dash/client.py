@@ -9,6 +9,7 @@ from dash.data.function import DashFunction
 from dash.data.job import DashJob
 from dash.data.model import DashModel
 from dash.data.resource import ResourceRef
+from dash.data.session import SessionRef
 from dash.data.user import User
 
 
@@ -277,6 +278,17 @@ class DashClient:
                 path=f'/user/',
             ),
         )
+
+    def get_user_session_list(self) -> list[SessionRef]:
+        return [
+            SessionRef(
+                data=data,
+            )
+            for data in self._call_raw(
+                method='GET',
+                path=f'/batch/user/session/',
+            )
+        ]
 
     def post_user_exec(
         self, *, namespace: str | None = None,
