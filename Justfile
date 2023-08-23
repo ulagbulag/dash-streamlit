@@ -1,7 +1,9 @@
 # Configure environment variables
 export ALPINE_VERSION := env_var_or_default('ALPINE_VERSION', '3.17')
+export CUDA_VERSION := env_var_or_default('CUDA_VERSION', '12.2.0')
 export OCI_IMAGE := env_var_or_default('OCI_IMAGE', 'quay.io/ulagbulag/openark-dash-management-tool')
 export OCI_IMAGE_VERSION := env_var_or_default('OCI_IMAGE_VERSION', 'latest')
+export UBUNTU_VERSION := env_var_or_default('UBUNTU_VERSION', '22.04')
 
 default:
   @just run
@@ -19,8 +21,11 @@ run *ARGS:
 
 oci-build:
   docker build \
+    --file './Dockerfile.ubuntu-cuda' \
     --tag "${OCI_IMAGE}:${OCI_IMAGE_VERSION}" \
     --build-arg ALPINE_VERSION="${ALPINE_VERSION}" \
+    --build-arg CUDA_VERSION="${CUDA_VERSION}" \
+    --build-arg UBUNTU_VERSION="${UBUNTU_VERSION}" \
     .
 
 oci-push: oci-build
