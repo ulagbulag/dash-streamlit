@@ -11,6 +11,9 @@ ARG UBUNTU_VERSION="22.04"
 # Be ready for serving
 FROM "nvcr.io/nvidia/${NVIDIA_IMAGE_NAME}:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_VERSION}"
 
+# Package Manager Configuration
+ARG DEBIAN_FRONTEND='noninteractive'
+
 # Server Configuration
 EXPOSE 80/tcp
 WORKDIR /src
