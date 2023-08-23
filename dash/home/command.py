@@ -12,7 +12,11 @@ from dash.storage.local import LocalStorage
 
 # Create engines
 client = DashClient()
-search_engine = SearchEngine()
+try:
+    search_engine = SearchEngine()
+except ImportError as e:
+    search_engine = None
+    print(e)
 storage = LocalStorage()
 
 
@@ -20,6 +24,10 @@ def draw_page(
     *, functions: dict[str, list[ResourceRef]],
     user: User,
 ) -> None:
+    # Test
+    if not search_engine:
+        return
+
     # Get metadata
     user_name = user.get_user_name()
     user_session = client.user_session()

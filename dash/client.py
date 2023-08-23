@@ -28,6 +28,10 @@ class DashClient:
         self._host = os.environ.get('DASH_HOST') \
             or 'https://mobilex.kr/dash/api/'
 
+    def __reduce__(self):
+        return ()
+
+    @st.cache_data(ttl=300)
     def _call_raw(
         self, *, namespace: str | None = None,
         method: str, path: str, value: Any = None,

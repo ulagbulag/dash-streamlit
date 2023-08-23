@@ -38,6 +38,9 @@ class SearchEngine:
         except ImportError:
             raise ImportError('Cannot find any suitable SearchEngine')
 
+    def __reduce__(self):
+        return ()
+
     def add_function(
         self,
         function: str,
@@ -50,6 +53,7 @@ class SearchEngine:
             witnesses=witnesses,
         )
 
+    @st.cache_data(ttl=3600)
     def search(
         self,
         query: str,

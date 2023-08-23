@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 
 from dash.client import DashClient
 from dash.data.session import SessionRef
+from dash.data.user import User
 
 
 # Create engines
@@ -11,7 +12,7 @@ client = DashClient()
 
 def draw_page(
     *, namespace: str, feature_name: str,
-    user_name: str,
+    user: User,
 ) -> None:
     # Page information
     st.title('Remote Desktop')

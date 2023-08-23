@@ -17,6 +17,9 @@ class LocalStorage(BaseStorage):
             parents=True,
         )
 
+    def __reduce__(self):
+        return ()
+
     def _get_namespaced(self, namespace: str) -> Path:
         path = self._base_dir.joinpath(f'./{namespace}')
         path.mkdir(
