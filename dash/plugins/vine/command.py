@@ -23,7 +23,7 @@ def draw_page(
     st.title('Command')
 
     # Get metadata
-    user_name = user.get_user_name()
+    user_name = user.name
 
     # Show available sessions
     st.subheader(':desktop_computer: Select')

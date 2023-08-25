@@ -29,11 +29,11 @@ def draw_page(
         return
 
     # Get metadata
-    user_name = user.get_user_name()
+    user_name = user.name
     user_session = client.user_session()
 
     # SKip if not admin
-    if not user.get_role_admin():
+    if not user.role_admin:
         return
 
     # Store all commands

@@ -12,7 +12,7 @@ def draw_page(
     user: User,
 ) -> None:
     # Page Information
-    st.title('Welcome to OpenARK Dashboard')
+    st.title(':runner: Welcome to OpenARK Dashboard')
 
     # Draw command line widget
     _draw_page_command(

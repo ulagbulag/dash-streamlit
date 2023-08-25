@@ -6,23 +6,46 @@ class User:
     def __init__(self, data: dict[Hashable, Any]) -> None:
         self.data = data
 
-    def get_box_name(self) -> str | None:
+    @property
+    def box_name(self) -> str | None:
         return self.data.get('boxName')
 
-    def get_namespace(self) -> str:
-        return str(self.data['namespace'])
+    @property
+    def email(self) -> str:
+        return str(self.data['user']['contact']['email'])
 
-    def get_nickname(self) -> str:
-        return str(self.data['user']['name'])
+    @property
+    def image(self) -> str:
+        return ''
 
-    def get_user_name(self) -> str:
+    @property
+    def name(self) -> str:
         return str(self.data['userName'])
 
-    def get_role_admin(self) -> bool:
+    @property
+    def namespace(self) -> str:
+        return str(self.data['namespace'])
+
+    @property
+    def nickname(self) -> str:
+        return str(self.data['user']['name'])
+
+    @property
+    def role_admin(self) -> bool:
         return bool(self.data['role']['isAdmin'])
 
-    def get_role_dev(self) -> bool:
+    @property
+    def role_dev(self) -> bool:
         return bool(self.data['role']['isDev'])
 
-    def get_role_ops(self) -> bool:
+    @property
+    def role_ops(self) -> bool:
         return bool(self.data['role']['isOps'])
+
+    @property
+    def tel_office(self) -> str:
+        return str(self.data['user']['contact']['telOffice'])
+
+    @property
+    def tel_phone(self) -> str:
+        return str(self.data['user']['contact']['telPhone'])

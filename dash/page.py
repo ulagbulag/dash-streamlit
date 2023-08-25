@@ -28,7 +28,7 @@ def draw_page(
 
     # Get metadata
     function_name = function.name()
-    user_name = user.get_user_name()
+    user_name = user.name
 
     # Show available commands
     commands = {

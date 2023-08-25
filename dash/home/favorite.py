@@ -11,7 +11,7 @@ client = DashClient()
 
 def draw_page(*, user: User) -> None:
     # Get metadata
-    user_name = user.get_user_name()
+    user_name = user.name
     user_session = client.user_session()
 
     # Page Information
