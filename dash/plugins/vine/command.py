@@ -39,7 +39,7 @@ def draw_page(
         return
 
     # Show available commands
-    st.subheader(':zap: Action')
+    st.subheader(':left_speech_bubble: Command')
     commands = {
         'Database': _draw_page_database,
         'Execute': _draw_page_execute,
