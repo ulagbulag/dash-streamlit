@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class SessionRef:
     def __init__(self, data: dict[str, str]) -> None:
         self.namespace = data['namespace']
@@ -21,6 +24,12 @@ class SessionRef:
             'Namespace': self.namespace,
             'NodeName': self.node_name,
         }
+
+    def __eq__(self, other: Any) -> bool:
+        return repr(self) == repr(other)
+
+    def __hash__(self) -> int:
+        return hash(repr(self.to_dict()))
 
     def __repr__(self) -> str:
         return self.user_name

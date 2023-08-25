@@ -12,6 +12,9 @@ class DashObject:
             and self.name() == value.name() \
             and self.namespace() == value.namespace()
 
+    def __hash__(self) -> int:
+        return hash(repr(self.data))
+
     def name(self) -> str:
         data = resolve_pointer(self.data, '/metadata/name', None)
         if isinstance(data, str) and data:
