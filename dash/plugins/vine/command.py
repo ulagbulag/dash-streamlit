@@ -26,6 +26,7 @@ def draw_page(
     user_name = user.get_user_name()
 
     # Show available sessions
+    st.subheader(':desktop_computer: Select')
     sessions = DataFrame(
         session.to_dict()
         for session in client.get_user_session_list()
@@ -36,28 +37,6 @@ def draw_page(
     )
     if not sessions_selected:
         return
-
-    # Get target nodes
-    # st.subheader(':desktop_computer: Select')
-    # nodes = client.get_model_item_list(
-    #     namespace=namespace,
-    #     name='box',
-    # )
-    # nodes_selected = selector.dataframe(
-    #     df=to_dataframe(
-    #         items=[
-    #             node.data for node in nodes
-    #         ],
-    #         map=[
-    #             ('id', '/metadata/name', False),
-    #             ('name', '/metadata/labels/dash.ulagbulag.io~1alias', True),
-    #             ('state', '/status/state/', False),
-    #         ],
-    #     ),
-    #     show_selected=False,
-    # )
-    # if not nodes_selected:
-    #     return
 
     # Show available commands
     st.subheader(':zap: Action')
