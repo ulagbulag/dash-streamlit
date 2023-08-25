@@ -34,11 +34,21 @@ class Command:
             return self.key
         return self.name.replace('-', ' ')
 
+    def to_json(self) -> dict[str, Any]:
+        return {
+            'kind': self.kind,
+            'name': self.name,
+            'namespace': self.namespace,
+            'key': self.key,
+        }
+
     def __eq__(self, other: Any) -> bool:
-        return repr(self) == repr(other)
+        if isinstance(other, self.__class__):
+            return self.to_json() == other.to_json()
+        return False
 
     def __hash__(self) -> int:
-        return hash(repr(self))
+        return hash(repr(self.to_json()))
 
     def __repr__(self) -> str:
         if self.key:

@@ -37,7 +37,7 @@ def draw_page(
         return
 
     # Store all commands
-    commands = []
+    commands: list[Command] = []
     for namespace, functions_namespaced in functions.items():
         for function in functions_namespaced:
             # command = Command(
@@ -77,27 +77,35 @@ def draw_page(
         label=':heavy_dollar_sign: Command here',
         key=f'/{user_session}/home/command/query',
     )
-    if not query:
-        return
 
     # Search actions
-    actions = search_engine.search(
-        query=query,
-    )
-    if not actions:
-        st.info('Empty')
-        return
+    if query:
+        actions = search_engine.search(
+            query=query,
+        )
+        if not actions:
+            st.info('Empty')
+            return
 
-    # Select an action
-    action = actions[0]
+        # Select an action
+        action = actions[0]
 
-    # Parse the action
-    command_ref = Command.from_str(action)
+        # Parse the action
+        command_ref = Command.from_str(action)
+    else:
+        command_ref = None
 
     # Parse command
-    command = st.selectbox(
-        label=':package: Command',
+    command_selected = st.selectbox(
+        label=':zap: Action',
         key=f'/{user_session}/home/command/query/command',
         options=commands,
-        index=commands.index(command_ref),
+        index=commands.index(command_ref) if command_ref is not None else 0,
     )
+    if not command_selected:
+        return
+
+    # Update command
+    is_need_training = command_ref != command_selected
+
+    # Action
