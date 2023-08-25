@@ -15,5 +15,12 @@ class SessionRef:
     def _novnc_url(self, kind: str) -> str:
         return f'https://mobilex.kr/dashboard/vnc/{kind}.html?host=mobilex.kr/user/{self.user_name}/vnc/&scale=true'
 
+    def to_dict(self) -> dict[str, str]:
+        return {
+            'Name': self.user_name,
+            'Namespace': self.namespace,
+            'NodeName': self.node_name,
+        }
+
     def __repr__(self) -> str:
         return self.user_name

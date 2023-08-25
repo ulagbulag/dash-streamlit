@@ -4,7 +4,10 @@ import streamlit as st
 import st_aggrid
 
 
-def dataframe(df: pd.DataFrame) -> list[dict[Hashable, Any]] | None:
+def dataframe(
+    df: pd.DataFrame,
+    show_selected: bool = True,
+) -> list[dict[Hashable, Any]] | None:
     '''
     Adds a UI on top of a dataframe to let viewers filter columns
 
@@ -49,6 +52,7 @@ def dataframe(df: pd.DataFrame) -> list[dict[Hashable, Any]] | None:
 
     selected = pd.DataFrame(selected)
     del selected['_selectedRowNodeInfo']
-    st.write(selected)
+    if show_selected:
+        st.write(selected)
 
     return selected.to_dict(orient='records')

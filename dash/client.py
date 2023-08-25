@@ -31,53 +31,86 @@ class DashClient:
     def __reduce__(self):
         return ()
 
-    @st.cache_data(ttl=300)
     def _call_raw(
         self, *, namespace: str | None = None,
         method: str, path: str, value: Any = None,
         ok: bool = False,
     ) -> Any:
-        headers = _get_websocket_headers() or {}
-        headers_pass_through = [
-            'Authorization',
-            'Cookie',
-        ]
+        def call(
+            namespace: str | None,
+            method: str, path: str, value: Any = None,
+            ok: bool = False,
+        ):
+            headers = _get_websocket_headers() or {}
+            headers_pass_through = [
+                'Authorization',
+                'Cookie',
+            ]
 
-        headers = {
-            header: headers.get(header, None)
-            for header in headers_pass_through
-        }
-        if namespace:
-            headers['X-ARK-NAMESPACE'] = namespace
+            headers = {
+                header: headers.get(header, None)
+                for header in headers_pass_through
+            }
+            if namespace:
+                headers['X-ARK-NAMESPACE'] = namespace
 
-        response = self._session.request(
-            method=method,
-            url=f'{self._host}{path}',
-            headers=headers,
-            json=value,
-        )
-
-        if response.status_code != 200:
-            raise Exception(
-                f'Failed to execute {path}: status code [{response.status_code}]',
+            response = self._session.request(
+                method=method,
+                url=f'{self._host}{path}',
+                headers=headers,
+                json=value,
             )
 
-        if ok:
-            return None
+            if response.status_code != 200:
+                raise Exception(
+                    f'Failed to execute {path}: status code [{response.status_code}]',
+                )
 
-        if response.text:
-            data = response.json()
-        else:
-            raise Exception(f'Failed to execute {path}: no response')
+            if ok:
+                return None
 
-        if response.status_code == 200:
+            if response.text:
+                data = response.json()
+            else:
+                raise Exception(f'Failed to execute {path}: no response')
+
+            if response.status_code == 200:
+                if 'spec' in data:
+                    return data['spec']
+                raise Exception(f'Failed to execute {path}: no output')
             if 'spec' in data:
-                return data['spec']
-            raise Exception(f'Failed to execute {path}: no output')
-        if 'spec' in data:
-            raise Exception(f'Failed to execute {path}: {data["spec"]}')
-        raise Exception(
-            f'Failed to execute {path}: status code [{response.status_code}]')
+                raise Exception(f'Failed to execute {path}: {data["spec"]}')
+            raise Exception(
+                f'Failed to execute {path}: status code [{response.status_code}]')
+
+        if method in ['GET', 'OPTION']:
+            @st.cache_data(ttl=300)
+            def call_cached(
+                namespace: str | None,
+                method: str, path: str, value: Any = None,
+                ok: bool = False,
+            ):
+                return call(
+                    namespace=namespace,
+                    method=method,
+                    path=path,
+                    value=value,
+                    ok=ok,
+                )
+            return call_cached(
+                namespace=namespace,
+                method=method,
+                path=path,
+                value=value,
+                ok=ok,
+            )
+        return call(
+            namespace=namespace,
+            method=method,
+            path=path,
+            value=value,
+            ok=ok,
+        )
 
     def user_session(self) -> int:
         cookie = (_get_websocket_headers() or {}).get('Cookie')
@@ -297,25 +330,46 @@ class DashClient:
     def post_user_exec(
         self, *, namespace: str | None = None,
         command: str,
+        option_terminal: bool,
     ) -> None:
         return self._call_raw(
             namespace=namespace,
             method='POST',
             path=f'/user/desktop/exec/',
-            value=_parse_command(command),
+            value=_parse_command(
+                raw=command,
+                option_terminal=option_terminal,
+            ),
         )
 
-    def post_user_exec_broadcast(self, command: str) -> None:
+    def post_user_exec_broadcast(
+        self, command: str,
+        option_terminal: bool,
+        target_user_names: list[str] | None,
+    ) -> None:
         return self._call_raw(
             method='POST',
             path=f'/batch/user/desktop/exec/broadcast/',
-            value=_parse_command(command),
+            value=None if target_user_names is None else {
+                'command': _parse_command(
+                    raw=command,
+                    option_terminal=option_terminal,
+                ),
+                'userNames': target_user_names,
+            },
         )
 
 
-def _parse_command(raw: str) -> list[str]:
-    return [
-        '/bin/sh',
-        '-c',
-        raw,
-    ]
+def _parse_command(raw: str, option_terminal: bool) -> list[str]:
+    if option_terminal:
+        return [
+            'xfce4-terminal',
+            '-e',
+            raw,
+        ]
+    else:
+        return [
+            '/bin/sh',
+            '-c',
+            raw,
+        ]

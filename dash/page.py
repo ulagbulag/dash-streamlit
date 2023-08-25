@@ -72,12 +72,6 @@ def _draw_page_job_list(
             items=[
                 j.data for j in jobs
             ],
-            map=[
-                ('name', '/metadata/name/'),
-                ('state', '/status/state/'),
-                ('created at', '/metadata/creationTimestamp/'),
-                ('updated at', '/status/lastUpdated/'),
-            ],
         )
 
         # Show DataFrame and Select Data
