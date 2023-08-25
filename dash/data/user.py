@@ -12,7 +12,7 @@ class User:
 
     @property
     def email(self) -> str:
-        return str(self.data['user']['contact']['email'])
+        return str(self.data['user']['contact']['email'] or '')
 
     @property
     def image(self) -> str:
@@ -20,15 +20,15 @@ class User:
 
     @property
     def name(self) -> str:
-        return str(self.data['userName'])
+        return str(self.data['userName'] or '')
 
     @property
     def namespace(self) -> str:
-        return str(self.data['namespace'])
+        return str(self.data['namespace'] or '')
 
     @property
     def nickname(self) -> str:
-        return str(self.data['user']['name'])
+        return str(self.data['user']['name'] or '')
 
     @property
     def role_admin(self) -> bool:
@@ -44,8 +44,8 @@ class User:
 
     @property
     def tel_office(self) -> str:
-        return str(self.data['user']['contact']['telOffice'])
+        return str(self.data['user']['contact']['telOffice'] or '')
 
     @property
     def tel_phone(self) -> str:
-        return str(self.data['user']['contact']['telPhone'])
+        return str(self.data['user']['contact']['telPhone'] or '')
