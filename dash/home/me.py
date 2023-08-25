@@ -25,13 +25,13 @@ def draw_page(*, user: User) -> None:
         label: str | None = None,
         disabled: bool = False,
     ) -> tuple[str, bool]:
-        input_default = getattr(user, key)
+        input_default = getattr(user, key) or ''
         input_value = st.text_input(
             label=label or key.title(),
             key=f'/{user_session}/home/me/{key}',
             value=input_default,
             disabled=disabled,
-        )
+        ) or ''
         is_me_changed |= input_default != input_value
         return (input_value, is_me_changed)
 
