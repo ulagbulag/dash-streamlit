@@ -84,7 +84,7 @@ class DashClient:
                 f'Failed to execute {path}: status code [{response.status_code}]')
 
         if method in ['GET', 'OPTION']:
-            @st.cache_data(ttl=300)
+            @st.cache_data(ttl=30)
             def call_cached(
                 namespace: str | None,
                 method: str, path: str, value: Any = None,
