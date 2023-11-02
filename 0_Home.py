@@ -74,7 +74,7 @@ def load_pages():
             is_admin = False
 
     # Load cache items
-    function_selected = st.session_state.get(f'/{user_session}/function', None)
+    function_selected = st.session_state.get(f'/{user_session}/task', None)
     plugin_selected = st.session_state.get(f'/{user_session}/plugin', None)
 
     # Load Pages
@@ -87,7 +87,7 @@ def load_pages():
                 else 'secondary',
             use_container_width=True,
         ):
-            function_selected = st.session_state[f'/{user_session}/function'] = None
+            function_selected = st.session_state[f'/{user_session}/task'] = None
             plugin_selected = st.session_state[f'/{user_session}/plugin'] = None
             st.experimental_rerun()
 
@@ -106,7 +106,7 @@ def load_pages():
                             type='primary' if feature[:2] == plugin_selected else 'secondary',
                             use_container_width=True,
                         ):
-                            function_selected = st.session_state[f'/{user_session}/function'] = None
+                            function_selected = st.session_state[f'/{user_session}/task'] = None
                             plugin_selected = st.session_state[f'/{user_session}/plugin'] = feature[:2]
                             st.experimental_rerun()
 
@@ -118,11 +118,11 @@ def load_pages():
                     )
                     if st.button(
                         label=function.title(),
-                        key=f'/{user_session}/function/{function.namespace()}/{function.name()}',
+                        key=f'/{user_session}/task/{function.namespace()}/{function.name()}',
                         type='primary' if function == function_selected else 'secondary',
                         use_container_width=True,
                     ):
-                        function_selected = st.session_state[f'/{user_session}/function'] = function
+                        function_selected = st.session_state[f'/{user_session}/task'] = function
                         plugin_selected = st.session_state[f'/{user_session}/plugin'] = None
                         st.experimental_rerun()
 

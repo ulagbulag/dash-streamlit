@@ -20,16 +20,17 @@ run *ARGS:
     {{ ARGS }}
 
 oci-build:
-  docker build \
+  docker buildx build \
     --file './Dockerfile.ubuntu-cuda' \
     --tag "${OCI_IMAGE}:${OCI_IMAGE_VERSION}" \
     --build-arg ALPINE_VERSION="${ALPINE_VERSION}" \
     --build-arg CUDA_VERSION="${CUDA_VERSION}" \
     --build-arg UBUNTU_VERSION="${UBUNTU_VERSION}" \
+    --pull \
+    --push \
     .
 
 oci-push: oci-build
-  docker push "${OCI_IMAGE}:${OCI_IMAGE_VERSION}"
 
 oci-push-and-update-dash: oci-push
   kubectl -n dash delete pods --selector name=management-tool

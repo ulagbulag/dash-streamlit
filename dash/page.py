@@ -123,7 +123,7 @@ def _draw_page_job_delete(
     # Apply
     if st.button(
         label='Delete',
-        key=f'/{user_session}/function/{namespace}/{function_name}/delete',
+        key=f'/{user_session}/task/{namespace}/{function_name}/delete',
     ):
         with st.spinner(f'Deleting...'):
             for job in jobs:
@@ -151,7 +151,7 @@ def _draw_page_job_restart(
     # Apply
     if st.button(
         label='Restart',
-        key=f'/{user_session}/function/{namespace}/{function_name}/restart',
+        key=f'/{user_session}/task/{namespace}/{function_name}/restart',
     ):
         with st.spinner(f'Restarting...'):
             for job in jobs:
@@ -219,7 +219,7 @@ def _draw_page_batch_upload_as_csv(
     # Update inputs
     uploaded_file = st.file_uploader(
         label='Please upload a batch `.csv` file. A .csv template cat be found on `Run` tab.',
-        key=f'/{user_session}/function/{namespace}/{function_name}/batch/csv/upload',
+        key=f'/{user_session}/task/{namespace}/{function_name}/batch/csv/upload',
         accept_multiple_files=False,
         type=['csv'],
     )
@@ -262,7 +262,7 @@ def _draw_page_batch_upload_database(
     # Select key
     key = st.selectbox(
         label='Select one of the templates below.',
-        key=f'/{user_session}/function/{namespace}/{function_name}/batch/database/upload',
+        key=f'/{user_session}/task/{namespace}/{function_name}/batch/database/upload',
         options=keys,
     )
     if not key:
@@ -339,7 +339,7 @@ def _draw_page_action_create(
     # Apply
     if st.button(
         label='Click here to Submit',
-        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/create',
+        key=f'/{user_session}/task/{namespace}/{function_name}/{prefix}/create',
     ):
         if isinstance(values, DynamicObject):
             value = values
@@ -396,7 +396,7 @@ def _draw_page_action_download_as_csv(
     file_name = f'[{datetime.now().isoformat()}] {namespace}_{function.title_raw()}.csv'
     st.download_button(
         label='Download',
-        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/download/csv',
+        key=f'/{user_session}/task/{namespace}/{function_name}/{prefix}/download/csv',
         data=data,
         file_name=file_name,
     )
@@ -426,12 +426,12 @@ def _draw_page_action_download_database(
     # Apply
     key = st.text_input(
         label='Save to Database',
-        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/download/database/key',
+        key=f'/{user_session}/task/{namespace}/{function_name}/{prefix}/download/database/key',
         value=key or '',
     )
     if st.button(
         label='Save',
-        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/download/database/submit',
+        key=f'/{user_session}/task/{namespace}/{function_name}/{prefix}/download/database/submit',
         disabled=not key,
     ) and key:
         with st.spinner('Saving...'):
@@ -458,13 +458,13 @@ def _draw_page_action_delete_database(
     # Apply
     st.text_input(
         label='Delete from Database',
-        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/delete/database/key',
+        key=f'/{user_session}/task/{namespace}/{function_name}/{prefix}/delete/database/key',
         value=key,
         disabled=True,
     )
     if st.button(
         label='Delete',
-        key=f'/{user_session}/function/{namespace}/{function_name}/{prefix}/delete/database',
+        key=f'/{user_session}/task/{namespace}/{function_name}/{prefix}/delete/database',
     ):
         with storage.namespaced(storage_namespace) as s:
             s.set(key, None)

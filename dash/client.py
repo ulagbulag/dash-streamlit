@@ -60,6 +60,7 @@ class DashClient:
                 headers=headers,
                 json=value,
             )
+            print(response.text)
 
             if response.status_code != 200:
                 raise Exception(
@@ -119,7 +120,7 @@ class DashClient:
             st.stop()
 
         @st.cache_data()
-        def get_hashed_cookie(cookie: str) -> int:
+        def get_hashed_cookie(cookie: str | None) -> int:
             return hash(cookie)
 
         return get_hashed_cookie(cookie)
@@ -131,7 +132,7 @@ class DashClient:
         return self._call_raw(
             namespace=namespace,
             method='DELETE',
-            path=f'/function/{function_name}/job/{job_name}/',
+            path=f'/task/{function_name}/job/{job_name}/',
         )
 
     def get_job(
@@ -142,7 +143,7 @@ class DashClient:
             data=self._call_raw(
                 namespace=namespace,
                 method='GET',
-                path=f'/function/{function_name}/job/{job_name}/',
+                path=f'/task/{function_name}/job/{job_name}/',
             )
         )
 
@@ -171,7 +172,7 @@ class DashClient:
             for data in self._call_raw(
                 namespace=namespace,
                 method='GET',
-                path=f'/function/{function_name}/job/',
+                path=f'/task/{function_name}/job/',
             )
         ]
 
@@ -183,7 +184,7 @@ class DashClient:
             data=self._call_raw(
                 namespace=namespace,
                 method='POST',
-                path=f'/function/{function_name}/job/',
+                path=f'/task/{function_name}/job/',
                 value=value,
             ),
         )
@@ -210,7 +211,7 @@ class DashClient:
             data=self._call_raw(
                 namespace=namespace,
                 method='POST',
-                path=f'/function/{function_name}/job/{job_name}/restart/',
+                path=f'/task/{function_name}/job/{job_name}/restart/',
             ),
         )
 
@@ -222,7 +223,7 @@ class DashClient:
             data=self._call_raw(
                 namespace=namespace,
                 method='GET',
-                path=f'/function/{name}/',
+                path=f'/task/{name}/',
             ),
         )
 
@@ -236,7 +237,7 @@ class DashClient:
             for data in self._call_raw(
                 namespace=namespace,
                 method='GET',
-                path=f'/function/',
+                path=f'/task/',
             )
         ]
 
@@ -263,7 +264,7 @@ class DashClient:
             for data in self._call_raw(
                 namespace=namespace,
                 method='GET',
-                path=f'/model/{name}/function/',
+                path=f'/model/{name}/task/',
             )
         ]
 
