@@ -3,6 +3,7 @@ export ALPINE_VERSION := env_var_or_default('ALPINE_VERSION', '3.17')
 export CUDA_VERSION := env_var_or_default('CUDA_VERSION', '12.2.0')
 export OCI_IMAGE := env_var_or_default('OCI_IMAGE', 'quay.io/ulagbulag/openark-dash-management-tool')
 export OCI_IMAGE_VERSION := env_var_or_default('OCI_IMAGE_VERSION', 'latest')
+export OCI_PLATFORMS := env_var_or_default('OCI_PLATFORMS', 'linux/amd64')
 export UBUNTU_VERSION := env_var_or_default('UBUNTU_VERSION', '22.04')
 
 default:
@@ -26,6 +27,7 @@ oci-build:
     --build-arg ALPINE_VERSION="${ALPINE_VERSION}" \
     --build-arg CUDA_VERSION="${CUDA_VERSION}" \
     --build-arg UBUNTU_VERSION="${UBUNTU_VERSION}" \
+    --platform "${OCI_PLATFORMS}" \
     --pull \
     --push \
     .
