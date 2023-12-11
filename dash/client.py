@@ -362,14 +362,23 @@ class DashClient:
 
 
 def _parse_command(raw: str, option_terminal: bool) -> list[str]:
+    prefix = [
+        'dbus-launch',
+        '--auto-syntax',
+        '--close-stderr',
+        '--exit-with-session',
+    ]
+
     if option_terminal:
         return [
+            *prefix,
             'xfce4-terminal',
             '-e',
             raw,
         ]
     else:
         return [
+            *prefix,
             '/bin/sh',
             '-c',
             raw,

@@ -22,7 +22,7 @@ run *ARGS:
 
 oci-build:
   docker buildx build \
-    --file './Dockerfile.ubuntu-cuda' \
+    --file './Dockerfile.alpine' \
     --tag "${OCI_IMAGE}:${OCI_IMAGE_VERSION}" \
     --build-arg ALPINE_VERSION="${ALPINE_VERSION}" \
     --build-arg CUDA_VERSION="${CUDA_VERSION}" \
